@@ -4,7 +4,7 @@
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php the_title(); ?></title>
+    <title>Expensy - The best budget management app!</title>
     <?php wp_head(); ?>
 </head>
 

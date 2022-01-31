@@ -56,7 +56,7 @@ class SideExpenseView extends SideView {
                 return {
                     value: cat.id,
                     content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
-                    selected: i === 1,
+                    selected: i === 0,
                 };
             }),
             btn: {

@@ -56,9 +56,7 @@ class SelectElement {
 
             if (li.dataset.selected) {
                 this.cSelected.innerHTML = li.innerHTML;
-                // option.selected = 'selected';
-                console.log('Value', value);
-                this.select.value = value;
+                option.setAttribute('selected', 'selected');
                 customOption.classList.add('selected');
             }
 

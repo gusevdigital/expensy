@@ -1139,13 +1139,11 @@ button {
   flex-direction: column;
   margin-right: 1rem;
 }
-.month-switch {
+#switch-month {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 1rem;
-}
-.month-switch button {
   margin-bottom: 2.5rem;
 }
 .summary {

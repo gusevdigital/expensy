@@ -8,6 +8,7 @@ require_once(get_theme_file_path('/inc/ajax/register.php'));
 require_once(get_theme_file_path('/inc/ajax/setup.php'));
 require_once(get_theme_file_path('/inc/ajax/add_expense.php'));
 require_once(get_theme_file_path('/inc/ajax/add_income.php'));
+require_once(get_theme_file_path('/inc/ajax/switch_month.php'));
 
 
 add_action('wp_ajax_nopriv_return_world', 'getCrud');

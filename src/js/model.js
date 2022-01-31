@@ -1,4 +1,4 @@
-import { AJAX } from './helpers';
+import { AJAX, getPrevNextMonth } from './helpers';
 
 class Model {
     constructor() {
@@ -7,8 +7,9 @@ class Model {
 
     async initState() {
         try {
-            const data = await AJAX('init_state');
-            this.state = data.response;
+            const response = await AJAX('init_state');
+            if (response.status) this.state = response.response;
+            else throw response.message;
         } catch (err) {
             console.log(err);
         }
@@ -17,7 +18,8 @@ class Model {
     async login(data) {
         try {
             const response = await AJAX('login', data);
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -26,7 +28,8 @@ class Model {
     async logout() {
         try {
             const response = await AJAX('logout');
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -35,7 +38,8 @@ class Model {
     async reset(data) {
         try {
             const response = await AJAX('reset', data);
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -44,7 +48,8 @@ class Model {
     async register(data) {
         try {
             const response = await AJAX('register', data);
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -55,7 +60,33 @@ class Model {
             const response = await AJAX('setup', data);
             if (response.status) {
                 this.state.account.currency = data.currency;
+                return response;
+            } else {
+                throw response.message;
             }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async switchMonth(data) {
+        try {
+            const newMonth = getPrevNextMonth(
+                data,
+                this.state.current_date.month,
+                this.state.current_date.year
+            );
+
+            const response = await AJAX('switch_month', newMonth);
+            if (response.status) {
+                this.state.entries = response.entries;
+                this.state.starting_budget = response.starting_budget;
+                this.state.current_date = {
+                    month: newMonth.month,
+                    year: newMonth.year,
+                };
+            } else throw response.message;
+
             return response;
         } catch (err) {
             throw err;
@@ -69,9 +100,13 @@ class Model {
                 `add_${type === 'inc' ? 'income' : 'expense'}`,
                 data
             );
-            if (!response.response) throw 'No ID for entry.';
-            this._stateAddEntry(response, data, type);
-            return response;
+            if (response.status) {
+                if (!response.response) throw 'No ID for entry.';
+                this._stateAddEntry(response, data, type);
+                return response;
+            } else {
+                throw response.message;
+            }
         } catch (err) {
             throw err;
         }

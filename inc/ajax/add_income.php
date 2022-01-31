@@ -68,9 +68,9 @@ function expensy_check_income_data($data) {
     // Check if category exists
     global $wpdb;
     global $expensy_db_entry_cats;
-    if (!$wpdb->get_var("SELECT COUNT(*) FROM $expensy_db_entry_cats WHERE id=" . $data['cat'])) return [
+    if (!$wpdb->get_var("SELECT COUNT(*) FROM $expensy_db_entry_cats WHERE cat_id=" . $data['cat'])) return [
         'status' => 0,
-        'message' => 'Caterogy error',
+        'message' => 'This category does not exist! \(-_-)/',
         'fields' => ['cat']
     ];
 

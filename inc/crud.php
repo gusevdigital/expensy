@@ -400,5 +400,10 @@ function expensy_get_starting_budget($month = null, $year = null)
         if ($entry->type === 'exp') $sum -= floatval($entry->amount);
     }
 
+    // Get user custom starting budget
+    $setup_starting_budget = get_user_meta($user_id, 'expensy_starting_budget', true);
+
+    $sum = floatval($sum) + floatval($setup_starting_budget);
+
     return $sum;
 }

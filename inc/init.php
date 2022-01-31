@@ -17,7 +17,6 @@ function expensy_get_init_data()
     $email = $user->user_email;
     $setup = get_user_meta($user_id, 'expensy_setup', true);
     $currency = get_user_meta($user_id, 'expensy_currency', true);
-    $setup_starting_budget = get_user_meta($user_id, 'expensy_starting_budget', true);
 
     // Current date
     $month = date('m');
@@ -25,19 +24,12 @@ function expensy_get_init_data()
 
     // Starting budget
     $starting_budget = expensy_get_starting_budget($month, $year);
-    $starting_budget = floatval($starting_budget) + floatval($setup_starting_budget);
 
     // Entries
     $entries = expensy_get_entries();
 
     // Cats
     $cats = expensy_get_cats();
-
-    // Is there next month data
-    $next_month = expensy_get_entries_count('next') ? true : false;
-
-    // Is there prev month data
-    $prev_month = expensy_get_entries_count('prev') ? true : false;
 
     $data = [
         'logged' => true,
@@ -54,9 +46,7 @@ function expensy_get_init_data()
         ],
         'starting_budget' => $starting_budget,
         'entries' => $entries,
-        'cats' => $cats,
-        'next_month' => $next_month,
-        'prev_month' => $prev_month
+        'cats' => $cats
     ];
 
     return $data;

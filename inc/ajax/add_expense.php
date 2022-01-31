@@ -65,6 +65,15 @@ function expensy_check_expense_data($data) {
         'fields' => ['amount']
     ];
 
+    // Check if category exists
+    global $wpdb;
+    global $expensy_db_entry_cats;
+    if (!$wpdb->get_var("SELECT COUNT(*) FROM $expensy_db_entry_cats WHERE cat_id=" . $data['cat'])) return [
+        'status' => 0,
+        'message' => 'This category does not exist! \(-_-)/',
+        'fields' => ['cat']
+    ];
+
     return [
         'status' => 1
     ];

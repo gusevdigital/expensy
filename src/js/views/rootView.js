@@ -14,7 +14,7 @@ class RootView extends View {
         <div class="main">
             <div class="header"></div>
             <div class="content">
-                <div id="month-switch"></div>
+                <div id="switch-month"></div>
                 <div class="content__inner">
                     <div id="summary" class="content__section"></div>
                     <div id="expense-table" class="content__section"></div>

@@ -542,6 +542,8 @@ var _sideResetViewDefault = parcelHelpers.interopDefault(_sideResetView);
 var _sideRegisterView = require("./views/login/sideRegisterView");
 var _sideRegisterViewDefault = parcelHelpers.interopDefault(_sideRegisterView);
 // App page
+var _switchMonthView = require("./views/app/switchMonthView");
+var _switchMonthViewDefault = parcelHelpers.interopDefault(_switchMonthView);
 var _summaryView = require("./views/app/summaryView");
 var _summaryViewDefault = parcelHelpers.interopDefault(_summaryView);
 var _sideExpenseView = require("./views/app/sideExpenseView");
@@ -609,6 +611,7 @@ class Page {
         console.log('render App');
         _rootViewDefault.default.render();
         _headerViewDefault.default.render(_modelDefault.default.state);
+        _switchMonthViewDefault.default.render(_modelDefault.default.state);
         _summaryViewDefault.default.render(_modelDefault.default.state);
         _tableExpenseViewDefault.default.render(_modelDefault.default.state);
         _tableIncomeViewDefault.default.render(_modelDefault.default.state);
@@ -616,6 +619,7 @@ class Page {
         _sideIncomeViewDefault.default.render(_modelDefault.default.state);
         // App screen handlers
         _headerViewDefault.default.addHandlerLogout(App.controlLogout);
+        _switchMonthViewDefault.default.addHandlerSwitchMonth(App.controlSwitchMonth);
         _sideExpenseViewDefault.default.addHandlerForm(App.controlAddExpense);
         _sideIncomeViewDefault.default.addHandlerForm(App.controlAddIncome);
         // Activate elements
@@ -673,11 +677,9 @@ class App {
         try {
             view.startLoading();
             const response = await modelHandler(data);
-            if (response.status && response.message) {
-                view.cleanForm();
-                view.renderMessage('success', response.message);
-                if (doRefresh) _helpers.refresh();
-            } else throw errorMessage;
+            view.cleanForm();
+            view.renderMessage('success', response.message);
+            if (doRefresh) _helpers.refresh();
         } catch (err) {
             view.renderMessage('error', err.message);
             if (err.fields) view.fieldsError(err.fields);
@@ -691,18 +693,30 @@ class App {
         try {
             _rootViewDefault.default.startLoading();
             const response = await _modelDefault.default.setup(data);
-            if (response.status && response.message) {
-                _setupViewDefault.default.cleanForm();
-                // setupView.renderMessage('success', response.message);
-                _modelDefault.default.state.setup = 1;
-                _rootViewDefault.default.makeRootWide(false);
-                Page.renderAppPage();
-                // refresh();
-                console.log('Success');
-            } else throw 'Error setting up';
+            _setupViewDefault.default.cleanForm();
+            _modelDefault.default.state.setup = 1;
+            _rootViewDefault.default.makeRootWide(false);
+            Page.renderAppPage();
         } catch (err) {
             _setupViewDefault.default.renderMessage('error', err.message);
             if (err.fields) _setupViewDefault.default.fieldsError(err.fields);
+        } finally{
+            _rootViewDefault.default.stopLoading();
+        }
+    }
+    /*
+     * CONTROL MONTH SWITCH
+     */ static async controlSwitchMonth(data) {
+        try {
+            _rootViewDefault.default.startLoading();
+            await _modelDefault.default.switchMonth(data);
+            console.log(_modelDefault.default.state);
+            _switchMonthViewDefault.default.update(_modelDefault.default.state);
+            _summaryViewDefault.default.update(_modelDefault.default.state);
+            _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+            _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+        } catch (err) {
+            console.log(err);
         } finally{
             _rootViewDefault.default.stopLoading();
         }
@@ -713,12 +727,10 @@ class App {
         try {
             _sideExpenseViewDefault.default.startLoading();
             const response = await _modelDefault.default.addEntry('exp', data);
-            if (response.status) {
-                _sideExpenseViewDefault.default.cleanForm();
-                _sideExpenseViewDefault.default.renderMessage('success', response.message);
-                _summaryViewDefault.default.update(_modelDefault.default.state);
-                _tableExpenseViewDefault.default.update(_modelDefault.default.state);
-            } else throw 'Error adding expense';
+            _sideExpenseViewDefault.default.cleanForm();
+            _sideExpenseViewDefault.default.renderMessage('success', response.message);
+            _summaryViewDefault.default.update(_modelDefault.default.state);
+            _tableExpenseViewDefault.default.update(_modelDefault.default.state);
         } catch (err) {
             _sideExpenseViewDefault.default.renderMessage('error', err.message);
             console.log(err);
@@ -733,12 +745,10 @@ class App {
         try {
             _sideIncomeViewDefault.default.startLoading();
             const response = await _modelDefault.default.addEntry('inc', data);
-            if (response.status) {
-                _sideIncomeViewDefault.default.cleanForm();
-                _sideIncomeViewDefault.default.renderMessage('success', response.message);
-                _summaryViewDefault.default.update(_modelDefault.default.state);
-                _tableIncomeViewDefault.default.update(_modelDefault.default.state);
-            } else throw 'Error adding income';
+            _sideIncomeViewDefault.default.cleanForm();
+            _sideIncomeViewDefault.default.renderMessage('success', response.message);
+            _summaryViewDefault.default.update(_modelDefault.default.state);
+            _tableIncomeViewDefault.default.update(_modelDefault.default.state);
         } catch (err) {
             _sideIncomeViewDefault.default.renderMessage('error', err.message);
             console.log(err);
@@ -750,7 +760,7 @@ class App {
 }
 const app = new App();
 
-},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/elements/tableDrag":"1kCnj"}],"95FYz":[function(require,module,exports) {
+},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/elements/tableDrag":"1kCnj","./views/app/switchMonthView":"bvQyF"}],"95FYz":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');
@@ -15151,6 +15161,8 @@ parcelHelpers.export(exports, "getEntriesSum", ()=>getEntriesSum
 );
 parcelHelpers.export(exports, "truncate", ()=>truncate
 );
+parcelHelpers.export(exports, "getPrevNextMonth", ()=>getPrevNextMonth
+);
 var _config = require("./config");
 const timeout = function(s) {
     return new Promise(function(_, reject) {
@@ -15231,6 +15243,21 @@ const getEntriesSum = (entries, type = null)=>{
 };
 const truncate = (str, length)=>str.length > length ? `${str.substring(0, length)}...` : str
 ;
+const getPrevNextMonth = (type, currMont, currYear)=>{
+    let month, year;
+    if (type === 'prev') {
+        month = !(parseInt(currMont) - 1) ? 12 : parseInt(currMont) - 1;
+        year = !(parseInt(currMont) - 1) ? parseInt(currYear) - 1 : parseInt(currYear);
+    }
+    if (type === 'next') {
+        month = parseInt(currMont) + 1 > 12 ? 1 : parseInt(currMont) + 1;
+        year = parseInt(currMont) + 1 > 12 ? parseInt(currYear) + 1 : parseInt(currYear);
+    }
+    return month && year ? {
+        month,
+        year
+    } : false;
+};
 
 },{"./config":"6V52N","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1pVJj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -15242,8 +15269,9 @@ class Model {
     }
     async initState() {
         try {
-            const data = await _helpers.AJAX('init_state');
-            this.state = data.response;
+            const response = await _helpers.AJAX('init_state');
+            if (response.status) this.state = response.response;
+            else throw response.message;
         } catch (err) {
             console.log(err);
         }
@@ -15251,7 +15279,8 @@ class Model {
     async login(data) {
         try {
             const response = await _helpers.AJAX('login', data);
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -15259,7 +15288,8 @@ class Model {
     async logout() {
         try {
             const response = await _helpers.AJAX('logout');
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -15267,7 +15297,8 @@ class Model {
     async reset(data) {
         try {
             const response = await _helpers.AJAX('reset', data);
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -15275,7 +15306,8 @@ class Model {
     async register(data) {
         try {
             const response = await _helpers.AJAX('register', data);
-            return response;
+            if (response.status) return response;
+            else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -15283,7 +15315,26 @@ class Model {
     async setup(data) {
         try {
             const response = await _helpers.AJAX('setup', data);
-            if (response.status) this.state.account.currency = data.currency;
+            if (response.status) {
+                this.state.account.currency = data.currency;
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async switchMonth(data) {
+        try {
+            const newMonth = _helpers.getPrevNextMonth(data, this.state.current_date.month, this.state.current_date.year);
+            const response = await _helpers.AJAX('switch_month', newMonth);
+            if (response.status) {
+                this.state.entries = response.entries;
+                this.state.starting_budget = response.starting_budget;
+                this.state.current_date = {
+                    month: newMonth.month,
+                    year: newMonth.year
+                };
+            } else throw response.message;
             return response;
         } catch (err) {
             throw err;
@@ -15293,9 +15344,11 @@ class Model {
         try {
             console.log(data);
             const response = await _helpers.AJAX(`add_${type === 'inc' ? 'income' : 'expense'}`, data);
-            if (!response.response) throw 'No ID for entry.';
-            this._stateAddEntry(response, data, type);
-            return response;
+            if (response.status) {
+                if (!response.response) throw 'No ID for entry.';
+                this._stateAddEntry(response, data, type);
+                return response;
+            } else throw response.message;
         } catch (err) {
             throw err;
         }
@@ -15345,7 +15398,7 @@ class RootView extends _viewDefault.default {
         <div class="main">
             <div class="header"></div>
             <div class="content">
-                <div id="month-switch"></div>
+                <div id="switch-month"></div>
                 <div class="content__inner">
                     <div id="summary" class="content__section"></div>
                     <div id="expense-table" class="content__section"></div>
@@ -25075,7 +25128,7 @@ class SideExpenseView extends _sideViewDefault.default {
                 return {
                     value: cat.id,
                     content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
-                    selected: i === 1
+                    selected: i === 0
                 };
             }),
             btn: {
@@ -25365,9 +25418,7 @@ class SelectElement {
             customOption.innerHTML = content;
             if (li.dataset.selected) {
                 this.cSelected.innerHTML = li.innerHTML;
-                // option.selected = 'selected';
-                console.log('Value', value);
-                this.select.value = value;
+                option.setAttribute('selected', 'selected');
                 customOption.classList.add('selected');
             }
             this.select.insertAdjacentElement('beforeend', option);
@@ -25654,6 +25705,38 @@ class TableDrag {
 }
 exports.default = new TableDrag();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"bvQyF":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _view = require("../View");
+var _viewDefault = parcelHelpers.interopDefault(_view);
+var _helpers = require("../../helpers");
+class SwitchMonthView extends _viewDefault.default {
+    constructor(){
+        super();
+    }
+    setParent() {
+        this.parentElement = document.querySelector('#switch-month');
+    }
+    markup() {
+        const prevMonth = _helpers.getPrevNextMonth('prev', this.data.current_date.month, this.data.current_date.year);
+        const nextMonth = _helpers.getPrevNextMonth('next', this.data.current_date.month, this.data.current_date.year);
+        return `
+        <button class="btn-link switch-month__btn" data-month="prev">${_helpers.monthNames[prevMonth.month - 1]} ${prevMonth.year}</button>
+        <button class="btn-link switch-month__btn" data-month="next">${_helpers.monthNames[nextMonth.month - 1]} ${nextMonth.year}</button>
+        `;
+    }
+    addHandlerSwitchMonth(handler) {
+        this.targetElement.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.switch-month__btn');
+            if (!btn) return;
+            const month = btn.dataset.month;
+            handler(month);
+        });
+    }
+}
+exports.default = new SwitchMonthView();
+
+},{"../View":"9dvKv","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
 
 //# sourceMappingURL=app.js.map

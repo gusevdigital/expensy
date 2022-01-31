@@ -97,3 +97,22 @@ export const getEntriesSum = (entries, type = null) => {
 
 export const truncate = (str, length) =>
     str.length > length ? `${str.substring(0, length)}...` : str;
+
+export const getPrevNextMonth = (type, currMont, currYear) => {
+    let month, year;
+    if (type === 'prev') {
+        month = !(parseInt(currMont) - 1) ? 12 : parseInt(currMont) - 1;
+        year = !(parseInt(currMont) - 1)
+            ? parseInt(currYear) - 1
+            : parseInt(currYear);
+    }
+    if (type === 'next') {
+        month = parseInt(currMont) + 1 > 12 ? 1 : parseInt(currMont) + 1;
+        year =
+            parseInt(currMont) + 1 > 12
+                ? parseInt(currYear) + 1
+                : parseInt(currYear);
+    }
+
+    return month && year ? { month, year } : false;
+};

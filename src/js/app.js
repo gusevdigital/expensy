@@ -20,6 +20,7 @@ import sideResetView from './views/login/sideResetView';
 import sideRegisterView from './views/login/sideRegisterView';
 
 // App page
+import switchMonthView from './views/app/switchMonthView';
 import summaryView from './views/app/summaryView';
 import sideExpenseView from './views/app/sideExpenseView';
 import sideIncomeView from './views/app/sideIncomeView';
@@ -111,6 +112,7 @@ class Page {
         rootView.render();
         headerView.render(model.state);
 
+        switchMonthView.render(model.state);
         summaryView.render(model.state);
         tableExpenseView.render(model.state);
         tableIncomeView.render(model.state);
@@ -120,6 +122,7 @@ class Page {
 
         // App screen handlers
         headerView.addHandlerLogout(App.controlLogout);
+        switchMonthView.addHandlerSwitchMonth(App.controlSwitchMonth);
         sideExpenseView.addHandlerForm(App.controlAddExpense);
         sideIncomeView.addHandlerForm(App.controlAddIncome);
 
@@ -198,13 +201,9 @@ class App {
             view.startLoading();
 
             const response = await modelHandler(data);
-            if (response.status && response.message) {
-                view.cleanForm();
-                view.renderMessage('success', response.message);
-                if (doRefresh) refresh();
-            } else {
-                throw errorMessage;
-            }
+            view.cleanForm();
+            view.renderMessage('success', response.message);
+            if (doRefresh) refresh();
         } catch (err) {
             view.renderMessage('error', err.message);
             if (err.fields) view.fieldsError(err.fields);
@@ -220,20 +219,32 @@ class App {
         try {
             rootView.startLoading();
             const response = await model.setup(data);
-            if (response.status && response.message) {
-                setupView.cleanForm();
-                // setupView.renderMessage('success', response.message);
-                model.state.setup = 1;
-                rootView.makeRootWide(false);
-                Page.renderAppPage();
-                // refresh();
-                console.log('Success');
-            } else {
-                throw 'Error setting up';
-            }
+            setupView.cleanForm();
+            model.state.setup = 1;
+            rootView.makeRootWide(false);
+            Page.renderAppPage();
         } catch (err) {
             setupView.renderMessage('error', err.message);
             if (err.fields) setupView.fieldsError(err.fields);
+        } finally {
+            rootView.stopLoading();
+        }
+    }
+
+    /*
+     * CONTROL MONTH SWITCH
+     */
+    static async controlSwitchMonth(data) {
+        try {
+            rootView.startLoading();
+            await model.switchMonth(data);
+            console.log(model.state);
+            switchMonthView.update(model.state);
+            summaryView.update(model.state);
+            tableExpenseView.update(model.state);
+            tableIncomeView.update(model.state);
+        } catch (err) {
+            console.log(err);
         } finally {
             rootView.stopLoading();
         }
@@ -246,14 +257,10 @@ class App {
         try {
             sideExpenseView.startLoading();
             const response = await model.addEntry('exp', data);
-            if (response.status) {
-                sideExpenseView.cleanForm();
-                sideExpenseView.renderMessage('success', response.message);
-                summaryView.update(model.state);
-                tableExpenseView.update(model.state);
-            } else {
-                throw 'Error adding expense';
-            }
+            sideExpenseView.cleanForm();
+            sideExpenseView.renderMessage('success', response.message);
+            summaryView.update(model.state);
+            tableExpenseView.update(model.state);
         } catch (err) {
             sideExpenseView.renderMessage('error', err.message);
             console.log(err);
@@ -270,14 +277,11 @@ class App {
         try {
             sideIncomeView.startLoading();
             const response = await model.addEntry('inc', data);
-            if (response.status) {
-                sideIncomeView.cleanForm();
-                sideIncomeView.renderMessage('success', response.message);
-                summaryView.update(model.state);
-                tableIncomeView.update(model.state);
-            } else {
-                throw 'Error adding income';
-            }
+
+            sideIncomeView.cleanForm();
+            sideIncomeView.renderMessage('success', response.message);
+            summaryView.update(model.state);
+            tableIncomeView.update(model.state);
         } catch (err) {
             sideIncomeView.renderMessage('error', err.message);
             console.log(err);
