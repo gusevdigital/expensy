@@ -1,0 +1,109 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    &__logo {
+        height: 2rem;
+
+        @include breakpoint(medium) {
+            height: 2.5rem;
+        }
+    }
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+
+    &-item {
+        position: relative;
+        margin-left: 1.5rem;
+
+        @include breakpoint(large) {
+            margin-left: 2.5rem;
+        }
+
+        &:first-of-type {
+            margin-left: 0;
+        }
+
+        &__link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: $black;
+            @include header-style('h6');
+            transition: color $transition-time;
+            cursor: pointer;
+        }
+
+        &__icon {
+            display: inline-block;
+            padding: .9rem 1rem;
+            background-color: get-color('royal-blue', 'light');
+            border-radius: $radius-small;
+            line-height: 1;
+        }
+
+        &__title {
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+
+        &__dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: $white;
+            border-radius: $radius-small;
+            border: $border-width solid $primary;
+            padding: 1rem 1.5rem;
+            min-width: 10rem;
+            box-shadow: $shadow-small $primary;
+            overflow: hidden;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility $transition-time, opacity $transition-time;
+
+            li {
+                margin-bottom: 1rem;
+
+                &:last-of-type {
+                    margin-bottom: 0;
+                }
+            }
+        }
+
+        &:hover {
+            .nav {
+                &-item {
+                    &__link {
+                        color: $primary;
+                    }
+                }
+            }
+        }
+
+        &.active {
+            .nav {
+                &-item {
+                    &__link {
+                        color: $primary;
+                    }
+
+                    &__dropdown {
+                        visibility: visible;
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+.notice {
+    padding: .5rem .75rem;
+    border-width: $border-width;
+    border-style: solid;
+    border-radius: $radius-small;
+    margin-top: 1rem;
+    font-weight: bold;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity $transition-time, visibility $transition-time;
+
+    &--error {
+        border-color: get-color('cinnabar');
+        background-color: get-color('cinnabar', 'light');
+    }
+
+    &--success {
+        border-color: get-color('dingley');
+        background-color: get-color('dingley', 'light');
+    }
+}

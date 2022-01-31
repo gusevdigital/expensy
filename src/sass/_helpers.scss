@@ -1,0 +1,17 @@
+.show-for-large {
+    display: none !important;
+
+    @include breakpoint(large) {
+        display: block !important;
+    }
+}
+
+.hide-for-large {
+    @include breakpoint(large) {
+        display: none !important;
+    }
+}
+
+.hidden {
+    display: none !important;
+}

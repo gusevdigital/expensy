@@ -1,0 +1,43 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+html {
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+body {
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: $global-lineheight;
+    min-height: 100vh;
+    font-family: $font-family;
+    color: $black;
+    background: $primary-gradient;
+
+    @include breakpoint('medium') {
+        padding: 1rem 2rem;
+    }
+
+    @include breakpoint('large') {
+        padding: 3rem 5rem;
+    }
+}
+
+a {
+    color: $primary;
+    transition: color $transition-time, opacity $transition-time;
+    text-decoration: underline;
+
+    &:hover {
+        text-decoration: none;
+    }
+}

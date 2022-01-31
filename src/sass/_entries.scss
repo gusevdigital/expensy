@@ -1,0 +1,34 @@
+.entries {
+    list-style: none;
+    padding: 0.5rem 0;
+    margin: 0;
+
+    .entry {
+        margin-bottom: 2.5rem;
+
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+
+        &__amount {
+            @include header-style('h5');
+        }
+
+        &__actions {
+            padding-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+
+
+            &__item {
+                margin-right: 2.5rem;
+
+                &:last-of-type {
+                    margin-right: 0;
+                }
+            }
+        }
+    }
+
+}

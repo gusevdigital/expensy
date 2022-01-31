@@ -1,0 +1,39 @@
+.side {
+    &__nav {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 2rem;
+
+        a {
+            display: inline-flex;
+            flex-direction: column;
+            margin-left: 2rem;
+
+            &:first-of-type {
+                margin-left: 0;
+            }
+        }
+    }
+
+    &__title {
+        margin-bottom: 2rem;
+    }
+
+    &__subtitle {
+        @include header-style('h5');
+    }
+
+    &__heading {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+}
+
+@include breakpoint('large') {
+
+    #login,
+    #add_expense {
+        transform: translateX(0%);
+    }
+}

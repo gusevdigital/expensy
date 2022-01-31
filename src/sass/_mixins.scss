@@ -1,0 +1,114 @@
+@use "sass:map";
+
+/*
+* BREAKPOINTS
+*/
+
+@mixin breakpoint($val: large) {
+    @if ($val=='small') {
+        @content;
+    }
+
+    @else {
+        $width: map.get($breakpoints, $val);
+        $width: ($width / 16) + rem;
+
+        @media only screen and (min-width: #{$width}) {
+            @content;
+        }
+    }
+}
+
+@function helper-color($color, $mode: 'normal') {
+    @if $mode=='light' {
+        @return lighten(map.get($helper-colors, $color), 33%);
+    }
+
+    @else {
+        @return map.get($helper-colors, $color);
+    }
+}
+
+/*
+* HELPER COLORS
+*/
+@mixin generate-helper-colors($colors) {
+
+    @each $name,
+    $color in $colors {
+        .bg-#{"" + $name} {
+            background-color: $color;
+        }
+
+        .bg-#{"" + $name}-light {
+            background-color: lighten($color, 33%);
+        }
+
+        .text-#{"" + $name} {
+            color: $color;
+        }
+
+        .text-#{"" + $name}-light {
+            color: lighten($color, 33%);
+        }
+    }
+}
+
+@function get-color($name, $type: 'simple') {
+    $color: map.get($helper-colors, $name);
+
+    @if ($type=='light') {
+        @return lighten($color, 33%);
+    }
+
+    @else {
+        @return $color;
+    }
+}
+
+/*
+* HEADERS
+*/
+@mixin generate-headers($headers-sizes) {
+
+    @each $breakpoint,
+    $headers in $headers-sizes {
+        @include breakpoint(#{"" + $breakpoint}) {
+
+            @each $tag,
+            $data in $headers {
+
+                @each $attr,
+                $val in $data {
+
+                    #{"" + $tag},
+                    .#{"" + $tag} {
+                        @if ($attr=='size') {
+                            font-size: #{$val / $global-unit}+'rem';
+                        }
+
+                        @if ($attr=='line') {
+                            line-height: #{'' + $val};
+                        }
+
+                        @if ($attr=='weight') {
+                            font-weight: #{'' + $val};
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@mixin header-style($tag) {
+
+    @each $breakpoint,
+    $headers-tags in $headers {
+        @include breakpoint(#{"" + $breakpoint}) {
+            font-size: #{map.get($headers-tags, $tag, 'size')  / $global-unit}+'rem';
+            line-height: map.get($headers-tags, $tag, 'line');
+            font-weight: map.get($headers-tags, $tag, 'weight');
+        }
+    }
+}

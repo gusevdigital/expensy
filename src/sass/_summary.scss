@@ -1,0 +1,30 @@
+.summary {
+
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    border: $border-width solid $black;
+    border-radius: $radius-small;
+
+    li {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        width: 50%;
+
+        @include breakpoint(large) {
+            width: 25%;
+        }
+    }
+
+    &__data {
+        @include header-style('h4');
+    }
+
+    &--small {
+        .summary__data {
+            @include header-style('h5');
+        }
+    }
+}

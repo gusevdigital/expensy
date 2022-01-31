@@ -1,0 +1,51 @@
+.cat {
+    display: flex;
+    align-items: center;
+
+    &-icon {
+        display: inline-block;
+        height: 1.5rem;
+        width: 1.5rem;
+        border-radius: $radius-small;
+        margin-right: .7rem;
+    }
+
+    &-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        &__item {
+            display: flex;
+            align-items: center;
+            background-color: $gray-light;
+            padding: .3rem 1rem;
+            border: $border-width solid $black;
+            border-radius: $radius-small;
+            margin-bottom: .5rem;
+
+            &:last-of-type {
+                margin-bottom: 0;
+            }
+
+            .cat {
+                width: 100%;
+                margin-right: 1rem;
+            }
+
+            a {
+                display: inline-flex;
+
+                &:hover {
+                    opacity: 0.7;
+                }
+            }
+
+            &__move {
+                display: inline-flex;
+                flex-direction: column;
+                margin-right: 1rem;
+            }
+        }
+    }
+}

@@ -1,0 +1,111 @@
+#root {
+    position: relative;
+    display: flex;
+    background-color: $gray-light;
+    max-width: 90rem;
+    margin: 0 auto;
+    overflow: hidden;
+    min-height: 100vh;
+    transition: filter $transition-time-long;
+
+    @include breakpoint('medium') {
+        min-height: calc(100vh - 2rem);
+        border-radius: $radius-large
+    }
+
+    @include breakpoint('large') {
+        min-height: auto;
+        height: calc(100vh - 6rem);
+        padding-right: $side-width;
+    }
+
+    @include breakpoint('xxlarge') {
+        max-width: 110rem;
+    }
+
+    &.wide {
+        padding-right: 0;
+    }
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+}
+
+.header {
+    padding: 1.5rem;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.5rem 0.5rem;
+    overflow: hidden;
+}
+
+.side__header,
+.content__header,
+.side__inner,
+.content__inner {
+    padding: 0 1rem;
+}
+
+.side__inner,
+.content__inner {
+    height: 100%;
+}
+
+@include breakpoint(large) {
+    .header {
+        padding: 1.5rem 2.5rem;
+    }
+
+    .content,
+    .side {
+        padding: 1.5rem;
+    }
+
+    .side__header,
+    .content__header,
+    .side__inner,
+    .content__inner {
+        padding: 0 1rem;
+    }
+}
+
+.side {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    right: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 2.5rem;
+    background-color: $white;
+    transform: translateX(100%);
+    transition: transform $transition-time;
+    will-change: transform;
+
+    &.active {
+        transform: translateX(0%);
+    }
+
+    @include breakpoint('large') {
+        width: $side-width;
+    }
+}
+
+.content {
+    &__section {
+        margin-bottom: 2.5rem;
+
+        &__title {
+            margin-bottom: 1rem;
+        }
+    }
+}

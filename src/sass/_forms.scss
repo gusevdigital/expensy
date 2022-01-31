@@ -1,0 +1,203 @@
+.input {
+    margin-bottom: 1rem;
+
+    &__group {
+        display: flex;
+        align-items: center;
+        border-width: $border-width;
+        border-style: solid;
+        border-color: $black;
+        border-radius: $radius-small;
+        overflow: hidden;
+    }
+
+    label {
+        @include header-style('h6');
+    }
+
+    &__icon {
+        height: 1.5rem;
+        width: 1.5rem;
+        margin-left: 0.7rem;
+    }
+
+    &__field {
+        width: 100%;
+        border-width: 0;
+        border-color: transparent;
+        outline: none;
+        font-family: $font-family;
+        font-size: $glonal-font-size;
+        padding: 0;
+        padding: 0.5rem 0.7rem;
+
+        &__color {
+            width: 1.5rem;
+            height: 1.5rem;
+            background-color: red;
+        }
+    }
+
+    &__error {
+        display: none;
+        font-style: italic;
+        font-size: $font-size-small;
+        color: get-color('cinnabar');
+    }
+
+    &--error {
+        .input {
+            &__group {
+                border-color: get-color('cinnabar');
+            }
+
+            &__error {
+                display: block;
+            }
+        }
+    }
+
+    &--text,
+    &--number {
+        .input {
+            &__field {
+                line-height: 1.5rem;
+            }
+        }
+    }
+
+    textarea {
+        height: 4rem !important;
+        resize: none;
+    }
+}
+
+.custom-select {
+
+    &,
+    &__wrapper {
+        position: relative;
+    }
+
+    select {
+        display: none;
+    }
+
+    &__icon {
+        position: absolute;
+        right: .5rem;
+        transition: transform $transition-time;
+        cursor: pointer
+    }
+
+    &~.custom-select__options {
+        position: absolute;
+        background-color: $gray-light;
+        border: $border-width solid $black;
+        border-radius: $radius-small;
+        top: calc(100% + 1px);
+        overflow: hidden;
+        left: 0;
+        right: 0;
+        z-index: 99;
+        box-shadow: $shadow-small $black;
+
+
+        &.hidden {
+            display: none;
+        }
+    }
+
+    &__selected {
+        position: relative;
+        display: flex;
+        width: 100%;
+        cursor: pointer;
+        font-weight: 400;
+        user-select: none;
+        padding: 0.5rem 0.7rem;
+
+        svg {
+            margin-right: .5rem;
+        }
+    }
+
+    &.active {
+        .custom-select__icon {
+            transform: rotate(180deg);
+        }
+    }
+
+    &__option {
+        display: flex;
+        padding: .5rem;
+        background-color: $gray-light;
+        transition: background-color $transition-time;
+        user-select: none;
+        cursor: pointer;
+
+        svg {
+            margin-right: .5rem;
+        }
+
+        &:hover,
+        &.selected {
+            background-color: get-color('royal-blue', 'light');
+        }
+    }
+}
+
+/*
+* CHECKBOXES
+*/
+// CHECKBOX
+
+[type="checkbox"]:checked,
+[type="checkbox"]:not(:checked) {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+}
+
+[type="checkbox"]:checked+label,
+[type="checkbox"]:not(:checked)+label {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-left: 0;
+    margin-right: 1rem;
+    cursor: pointer;
+    line-height: 1rem;
+    display: inline-block;
+    color: $black;
+}
+
+[type="checkbox"]:checked+label:before,
+[type="checkbox"]:not(:checked)+label:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1rem;
+    height: 1rem;
+    border: $border-width solid $primary;
+    background: transparent;
+}
+
+[type="checkbox"]:checked+label:after,
+[type="checkbox"]:not(:checked)+label:after {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    background: $primary;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+[type="checkbox"]:not(:checked)+label:after {
+    opacity: 0;
+}
+
+[type="checkbox"]:checked+label:after {
+    opacity: 1;
+}

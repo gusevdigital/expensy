@@ -1,0 +1,22 @@
+{
+  "name": "expensy-html",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "parcel watch src/js/app.js",
+    "build": "parcel build src/js/app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.1.1",
+    "autoprefixer": "^10.4.2",
+    "parcel": "^2.1.1",
+    "parcel-plugin-json-url-loader": "^0.1.2",
+    "postcss": "^8.4.5"
+  },
+  "dependencies": {
+    "@lottiefiles/lottie-player": "^1.5.4",
+    "custom-select": "^1.1.15"
+  }
+}

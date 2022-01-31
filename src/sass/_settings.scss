@@ -1,0 +1,137 @@
+/*
+* GLOBAL
+*/
+$rem-base: 16;
+$global-unit: 14; // only number
+$html-font: $global-unit / $rem-base * 100%;
+$glonal-font-size: 1rem;
+$global-lineheight: 1.6;
+$font-size-small: 0.857rem;
+$font-family: 'Open Sans',
+sans-serif;
+$radius-small: 7px;
+$radius-large: 11px;
+$border-width: 2px;
+
+$transition-time: .3s;
+$transition-time-long: .6s;
+
+$headers-line-height: 1.2;
+
+$side-width: 30rem;
+
+$scrollbar-width: 0.5rem;
+
+$headers: (small: (h1: (size: 34,
+            line: $headers-line-height,
+            weight: 700),
+        h2: (size: 27,
+            line: $global-lineheight,
+            weight: 700),
+        h3: (size: 22,
+            line: $global-lineheight,
+            weight: 700),
+        h4: (size: 18,
+            line: $global-lineheight,
+            weight: 700),
+        h5: (size: 14,
+            line: $global-lineheight,
+            weight: 700),
+        h6: (size: 14,
+            line: 1.5,
+            weight: 600),
+    ),
+    medium: (h1: (size: 43,
+            line: $headers-line-height,
+            weight: 700),
+        h2: (size:34,
+            line: $headers-line-height,
+            weight: 700),
+        h3: (size: 27,
+            line: $global-lineheight,
+            weight: 700),
+        h4: (size: 22,
+            line: $global-lineheight,
+            weight: 700),
+        h5: (size: 18,
+            line: $global-lineheight,
+            weight: 700),
+        h6: (size: 14,
+            line: 1.5,
+            weight: 600),
+    ),
+);
+
+/*
+* COLORS
+*/
+// Primary colors
+$primary: #5450DC;
+$primary-alt: lighten($primary, 20%);
+$primary-gradient: linear-gradient(to right, $primary, $primary-alt);
+$black: #09090B;
+$white: #FFFFFF;
+$gray: #C7C7C7;
+$gray-light: #FAF8FF;
+
+// Helper colors
+$helper-colors: (shark: #222223,
+    royal-blue: $primary,
+    deluge: #896BA7,
+    malibu: #90C8FC,
+    blue-ribbon: #2466FF,
+    cinnabar: #E34234,
+    tree: #AC7563,
+    carrot: #F38A21,
+    lavender: #FAB8C4,
+    sunglow: #FCCF2F,
+    olivine: #95C675,
+    dingley: #597746,
+);
+
+$shark: #222223;
+$royal-blue: $primary;
+$deluge: #896BA7;
+$malibu: #90C8FC;
+$blue-ribbon: #2466FF;
+$cinnabar: #E34234;
+$tree: #AC7563;
+$carrot: #F38A21;
+$lavender: #FAB8C4;
+$sunglow: #FCCF2F;
+$olivine: #95C675;
+$dingley: #597746;
+$shark-light: lighten($shark, 80%);
+$royal-blue-light: lighten($royal-blue, 80%);
+$deluge-light: lighten($deluge, 80%);
+$malibu-light: lighten($malibu, 80%);
+$blue-ribbon-light: lighten($blue-ribbon, 80%);
+$cinnabar-light: lighten($cinnabar, 80%);
+$tree-light: lighten($tree, 80%);
+$carrot-light: lighten($carrot, 80%);
+$lavender-light: lighten($lavender, 80%);
+$sunglow-light: lighten($sunglow, 80%);
+$olivine-light: lighten($olivine, 80%);
+$dingley-light: lighten($dingley, 80%);
+
+/*
+* BOX SHADOWS
+*/
+$shadow-big: 1rem 1rem;
+$shadow-small: .5rem .5rem;
+$shadow-tiny: .25rem .25rem;
+
+/*
+* BREAKPOINTS
+*/
+$breakpoints: (medium: 620,
+    large: 1050,
+    xlarge: 1260,
+    xxlarge: 1680,
+);
+
+/*
+* GENERATE STAFF
+*/
+@include generate-helper-colors($helper-colors);
+@include generate-headers($headers);

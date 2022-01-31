@@ -1,0 +1,126 @@
+button {
+    background-color: transparent;
+    border-width: 0;
+    outline: none;
+    font-weight: 600;
+    font-family: $font-family;
+    -webkit-appearance: none;
+}
+
+.btn {
+
+    &-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+
+        button {
+            margin-right: 2.5rem;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+
+            &:last-of-type {
+                margin-right: 0;
+            }
+        }
+    }
+
+    &,
+    &:focus {
+        @include header-style(h6);
+        text-decoration: none;
+        display: inline-block;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-style: solid;
+        border-width: $border-width;
+        background-color: $white;
+        outline: none;
+        border-radius: $radius-small;
+        line-height: 1.5;
+        color: $black;
+        transition: box-shadow $transition-time;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    &-primary {
+        border-color: $primary;
+        box-shadow: $shadow-small $primary;
+
+        &:hover {
+            box-shadow: 0 0 $primary;
+        }
+    }
+
+    &-success {
+        border-color: get-color('dingley');
+        box-shadow: $shadow-small get-color('dingley');
+
+        &:hover {
+            box-shadow: 0 0 get-color('dingley');
+        }
+    }
+
+    &-error {
+        border-color: get-color('cinnabar');
+        box-shadow: $shadow-small get-color('cinnabar');
+
+        &:hover {
+            box-shadow: 0 0 get-color('cinnabar');
+        }
+    }
+
+    &-link {
+        @include header-style(h6);
+        text-decoration: none;
+        display: inline-block;
+        text-decoration: none;
+        color: $primary;
+        cursor: pointer;
+
+        &::after {
+            content: '';
+            display: block;
+            height: $border-width;
+            width: 100%;
+            background-color: $primary;
+            border-radius: .2rem;
+            opacity: 1;
+            transition: opacity $transition-time;
+        }
+
+        &:hover {
+            &::after {
+                opacity: 0;
+            }
+        }
+    }
+
+    &-small {
+        @include header-style('h6');
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        transition: box-shadow $transition-time;
+    }
+}
+
+@mixin generate-small-buttons($colors) {
+
+    @each $name,
+    $color in $colors {
+        .btn-small--#{"" + $name} {
+            background-color: get-color($name, 'light');
+            box-shadow: 0 0 $color;
+
+            &:hover {
+                box-shadow: $shadow-tiny $color;
+            }
+        }
+    }
+}
+
+@include generate-small-buttons($helper-colors);

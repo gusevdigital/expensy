@@ -1,0 +1,8 @@
+.question {
+    display: flex;
+    align-items: center;
+
+    &__text {
+        margin-right: 1rem;
+    }
+}

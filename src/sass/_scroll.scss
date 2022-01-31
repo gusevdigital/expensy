@@ -1,0 +1,21 @@
+.side__inner,
+.content__inner,
+.scroll {
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+        overflow: auto;
+        width: $scrollbar-width;
+        height: $scrollbar-width;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: get-color('royal-blue', 'light');
+        border-radius: $scrollbar-width;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: $primary-alt;
+        border-radius: $scrollbar-width;
+    }
+}

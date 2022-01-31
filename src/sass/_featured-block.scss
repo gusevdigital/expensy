@@ -1,0 +1,14 @@
+.featured-block {
+    padding: 1.5rem 2.5rem;
+    border-radius: $radius-large;
+    border: $border-width solid $primary;
+    box-shadow: $shadow-big $primary;
+    width: 100%;
+    max-width: 30rem;
+    margin: 0 auto;
+    background-color: $white;
+
+    &__title {
+        margin-bottom: 2.5rem;
+    }
+}

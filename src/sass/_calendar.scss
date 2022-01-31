@@ -1,0 +1,107 @@
+$cal-side-width-desktop: 15rem;
+$cal-side-width-mobile: 12rem;
+
+.cal {
+    position: relative;
+    white-space: nowrap;
+    user-select: none;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: calc(100% - $scrollbar-width);
+        width: 2rem;
+        background-color: $gray-light;
+        z-index: 2;
+    }
+
+    &-side {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: $cal-side-width-mobile;
+        border: $border-width solid $black;
+        border-radius: $radius-small;
+        background-color: $gray-light;
+        z-index: 2;
+
+        @include breakpoint(medium) {
+            width: $cal-side-width-desktop;
+        }
+
+        &__item {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            border-bottom: $border-width solid $black;
+            padding: 0 1rem;
+            height: 3rem;
+
+            &:last-of-type {
+                border-bottom-width: 0;
+            }
+
+            &--title {
+                @include header-style('h6');
+            }
+        }
+    }
+
+    &-table {
+        position: relative;
+        width: auto;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: $border-width solid $black;
+        border-radius: 0 $radius-small $radius-small 0;
+        padding-left: calc(1rem - $border-width);
+        z-index: 1;
+
+        &__container {
+            padding-left: calc($cal-side-width-mobile - 1rem);
+            width: 100%;
+            padding-bottom: 1rem;
+            cursor: grabbing;
+
+            @include breakpoint(medium) {
+                padding-left: calc($cal-side-width-desktop - 1rem);
+            }
+
+            &.dragging {}
+        }
+
+        th {
+            font-weight: normal;
+        }
+
+        td {
+            @include header-style('h6');
+        }
+
+        th,
+        td {
+            text-align: center;
+            vertical-align: middle;
+            width: 7rem;
+            min-width: 7rem;
+            height: 3rem;
+            min-height: 3rem;
+            white-space: nowrap;
+            border-bottom: $border-width solid $black;
+        }
+
+        tr {
+            &:last-of-type {
+
+                th,
+                td {
+                    border-bottom-width: 0;
+                }
+            }
+        }
+    }
+}
