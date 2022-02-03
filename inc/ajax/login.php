@@ -23,7 +23,7 @@ function expensy_ajax_login()
     $creds = [
         'user_login' => $user->user_login,
         'user_password' => $_POST['password'],
-        'remember' => $_POST['remember']
+        'remember' => isset($_POST['remember']) && $_POST['remember'] === 'on' ? true : false
     ];
 
     // Sign in
@@ -31,22 +31,22 @@ function expensy_ajax_login()
 
     // Process
     if (is_wp_error($user)) {
-		$data = array(
-			'status' => 0,
-			'message' => esc_html(strip_tags($user->get_error_message()))
-		);
+        $data = array(
+            'status' => 0,
+            'message' => esc_html(strip_tags($user->get_error_message()))
+        );
         wp_die(json_encode($data));
-	} else {
+    } else {
         // Set current user and cookie
         wp_set_current_user($user->ID);
         wp_set_auth_cookie($user->ID);
-		// Return success
+        // Return success
         wp_die(json_encode([
             'status' => 1,
             'response' => $user->ID,
             'message' => 'Login successful, redirecting...',
         ]));
-	}
+    }
 
     // KBAI!
     wp_die(json_encode([
@@ -55,7 +55,8 @@ function expensy_ajax_login()
     ]));
 }
 
-function expensy_check_login_creds($data, $user) {
+function expensy_check_login_creds($data, $user)
+{
     // Check required fields
     $required = [];
     if ($data['email'] === '') $required[] = 'email';

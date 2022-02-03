@@ -10,14 +10,14 @@
         position: absolute;
         bottom: 100%;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-45%);
         display: inline-block;
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.8rem;
         background-color: $white;
         border: $border-width solid $primary;
         border-radius: $radius-small;
         white-space: nowrap;
-        z-index: 99;
+        z-index: 49;
         visibility: hidden;
         opacity: 0;
         transition: visibility $transition-time, opacity $transition-time;

@@ -2,7 +2,6 @@
     position: relative;
     display: flex;
     background-color: $gray-light;
-    max-width: 90rem;
     margin: 0 auto;
     overflow: hidden;
     min-height: 100vh;
@@ -17,10 +16,6 @@
         min-height: auto;
         height: calc(100vh - 6rem);
         padding-right: $side-width;
-    }
-
-    @include breakpoint('xxlarge') {
-        max-width: 110rem;
     }
 
     &.wide {

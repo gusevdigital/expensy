@@ -10,6 +10,21 @@
         margin-right: .7rem;
     }
 
+    &-content {
+        display: inline-flex;
+        flex-direction: column;
+
+        &__title {
+            line-height: 1;
+        }
+
+        &__subtitle {
+            font-size: $font-size-small;
+            font-weight: 600;
+            line-height: 1;
+        }
+    }
+
     &-list {
         list-style: none;
         padding: 0;

@@ -31,19 +31,19 @@ function expensy_ajax_register()
 
     // Process register errors
     if (is_wp_error($user)) {
-		$data = array(
-			'status' => 0,
-			'message' => esc_html(strip_tags($user->get_error_message()))
-		);
+        $data = array(
+            'status' => 0,
+            'message' => esc_html(strip_tags($user->get_error_message()))
+        );
         wp_die(json_encode($data));
-	} else {
+    } else {
         if (!is_user_logged_in()) {
-			$creds = array(
-				'user_login'    => $data['user_login'],
-				'user_password' => $data['user_pass'],
-				'remember'      => true
-			);
-			$user_logged = wp_signon($creds, is_ssl());
+            $creds = array(
+                'user_login'    => $data['user_login'],
+                'user_password' => $data['user_pass'],
+                'remember'      => true
+            );
+            $user_logged = wp_signon($creds, is_ssl());
 
             // Process login errors
             if (is_wp_error($user_logged)) {
@@ -64,7 +64,7 @@ function expensy_ajax_register()
                 ]));
             }
         }
-	}
+    }
 
     // KBAI!
     wp_die(json_encode([
@@ -73,7 +73,8 @@ function expensy_ajax_register()
     ]));
 }
 
-function expensy_check_register_data($data) {
+function expensy_check_register_data($data)
+{
     // Check required fields
     $required = [];
     if (empty($data['name'])) $required[] = 'name';

@@ -1,5 +1,5 @@
 import View from '../View';
-import { formatAmount, truncate } from '../../helpers';
+import { formatAmount, truncate, formatDate } from '../../helpers';
 import { CAT_TRUNCATE_LENGTH } from '../../config';
 
 export default class TableView extends View {
@@ -11,15 +11,17 @@ export default class TableView extends View {
         const cats = this.data.cats.filter(cat => cat.type === this.type);
 
         const numberDays = new Date(
-            this.data.current_date.year,
-            this.data.current_date.month,
+            this.data.current_month.year,
+            this.data.current_month.month,
             0
         ).getDate();
-        const currentYear = this.data.current_date.year;
-        const currentMonth = this.data.current_date.month;
+        const currentYear = this.data.current_month.year;
+        const currentMonth = this.data.current_month.month;
         const dates = [];
         for (let i = 1; i <= numberDays; i++)
-            dates.push(`${currentMonth}/${i}`);
+            dates.push(
+                formatDate(`${currentYear}-${currentMonth}-${i}`, 'short')
+            );
 
         const sums = new Array(numberDays).fill(0);
 
@@ -36,10 +38,20 @@ export default class TableView extends View {
                     <div class="cat">
                         <span class="cat-icon bg-${
                             cat.color
-                        }"></span>${truncate(
+                        }"></span><span class="cat-content"><span class="cat-content__title">${truncate(
                             cat.name.trim(),
                             CAT_TRUNCATE_LENGTH
-                        )}
+                        )}</span><span class="cat-content__subtitle">${formatAmount(
+                            Object.values(this.data.entries)
+                                .flat()
+                                .filter(entry => entry.cat === cat.id)
+                                .reduce(
+                                    (prev, curr) =>
+                                        prev + parseFloat(curr.amount),
+                                    0
+                                ),
+                            this.data.account.currency
+                        )}</span></span>
                     </div>
                 </div>
                 `
@@ -52,7 +64,14 @@ export default class TableView extends View {
             <div class="cal-table__container scroll">
                 <table class="cal-table">
                     <tr>
-                    ${dates.map(date => `<th>${date}</th>`).join('')}
+                    ${dates
+                        .map(
+                            (date, i) =>
+                                `<th class="${
+                                    this.isToday(i) ? 'today' : ''
+                                }">${date}</th>`
+                        )
+                        .join('')}
                     </tr>
                     ${cats
                         .map(cat => {
@@ -64,34 +83,37 @@ export default class TableView extends View {
                                     2,
                                     '0'
                                 )}`;
-                                // Check if entries for this date exists
-                                if (this.data.entries.hasOwnProperty(key)) {
-                                    const sum = this.data.entries[key]
-                                        .filter(
-                                            entry =>
-                                                entry.type === this.type &&
-                                                entry.cat === cat.id
-                                        )
-                                        .reduce(
-                                            (prev, curr) =>
-                                                parseFloat(prev) +
-                                                parseFloat(curr.amount),
-                                            0
-                                        );
-                                    sums[i - 1] = sums[i - 1] + parseFloat(sum);
-                                    row += `<td>${
-                                        sum
-                                            ? `<button class="btn-small btn-small--${
-                                                  cat.color
-                                              }" data-side-open="entries">${formatAmount(
-                                                  sum,
-                                                  this.data.account.currency
-                                              )}</button>`
-                                            : ''
-                                    }</td>`;
-                                } else {
-                                    row += `<td></td>`;
-                                }
+                                const sum = this.data.entries[key]
+                                    ? this.data.entries[key]
+                                          ?.filter(
+                                              entry =>
+                                                  entry.type === this.type &&
+                                                  entry.cat === cat.id
+                                          )
+                                          ?.reduce(
+                                              (prev, curr) =>
+                                                  parseFloat(prev) +
+                                                  parseFloat(curr.amount),
+                                              0
+                                          )
+                                    : 0;
+                                sums[i - 1] = sum
+                                    ? sums[i - 1] + parseFloat(sum)
+                                    : sums[i - 1];
+                                row += `<td class="${
+                                    this.isToday(i - 1) ? 'today' : ''
+                                }">${
+                                    sum
+                                        ? `<button class="cal-table__entries btn-small btn-small--${
+                                              cat.color
+                                          }" data-cat="${
+                                              cat.id
+                                          }" data-day="${i}">${formatAmount(
+                                              sum,
+                                              this.data.account.currency
+                                          )}</button>`
+                                        : ''
+                                }</td>`;
                             }
                             return `<tr>${row}</tr>`;
                         })
@@ -99,8 +121,10 @@ export default class TableView extends View {
                     <tr>
                         ${sums
                             .map(
-                                sum =>
-                                    `<td>${formatAmount(
+                                (sum, i) =>
+                                    `<td class="${
+                                        this.isToday(i) ? 'today' : ''
+                                    }">${formatAmount(
                                         parseFloat(sum),
                                         this.data.account.currency
                                     )}</td>`
@@ -137,6 +161,17 @@ export default class TableView extends View {
             if (!newEl.isEqualNode(curEl)) {
                 curEl.innerHTML = newEl.innerHTML;
             }
+        });
+    }
+
+    addHandlerShowEntries(handler) {
+        this.targetElement.addEventListener('click', e => {
+            const btn = e.target.closest('.cal-table__entries');
+            if (!btn) return;
+            e.preventDefault();
+            const cat = btn.dataset.cat;
+            const day = btn.dataset.day;
+            handler(this.type, cat, day);
         });
     }
 }

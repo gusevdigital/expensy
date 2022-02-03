@@ -24,7 +24,9 @@ class SideLoginView extends SideView {
                 </svg>
             </a>
         </div>
-        <h2 class="side__title">Login</h2>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Login</h2>
+        </div>
         `;
     }
 
@@ -38,7 +40,7 @@ class SideLoginView extends SideView {
             label: 'Email',
             autocomplete: 'email',
             required: true,
-            validate: 'email'
+            validate: 'email',
         })}
         ${forms.field('password', {
             id: this.id,

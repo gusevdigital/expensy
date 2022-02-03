@@ -550,6 +550,10 @@ var _sideExpenseView = require("./views/app/sideExpenseView");
 var _sideExpenseViewDefault = parcelHelpers.interopDefault(_sideExpenseView);
 var _sideIncomeView = require("./views/app/sideIncomeView");
 var _sideIncomeViewDefault = parcelHelpers.interopDefault(_sideIncomeView);
+var _sideEntriesView = require("./views/app/sideEntriesView");
+var _sideEntriesViewDefault = parcelHelpers.interopDefault(_sideEntriesView);
+var _sideEditEntryView = require("./views/app/sideEditEntryView");
+var _sideEditEntryViewDefault = parcelHelpers.interopDefault(_sideEditEntryView);
 var _tableIncomeView = require("./views/app/tableIncomeView");
 var _tableIncomeViewDefault = parcelHelpers.interopDefault(_tableIncomeView);
 var _tableExpenseView = require("./views/app/tableExpenseView");
@@ -572,7 +576,7 @@ if (module.hot) module.hot.accept();
 class Page {
     /*
      * RENDER LOGIN
-     */ static async renderLoginPage() {
+     */ static renderLoginPage() {
         // Render header
         _headerViewDefault.default.render(_modelDefault.default.state);
         // Render Login screen
@@ -592,11 +596,10 @@ class Page {
     }
     /*
      * RENDER SETUP
-     */ static async renderSetupPage() {
+     */ static renderSetupPage() {
         // Render header
         _headerViewDefault.default.render(_modelDefault.default.state);
         // Render Setup screen
-        console.log('render Setup');
         _setupViewDefault.default.makeRootWide(true);
         _setupViewDefault.default.render();
         // Render screen handler
@@ -606,9 +609,8 @@ class Page {
     }
     /*
      * RENDER APP
-     */ static async renderAppPage() {
+     */ static renderAppPage() {
         // Render App screen
-        console.log('render App');
         _rootViewDefault.default.render();
         _headerViewDefault.default.render(_modelDefault.default.state);
         _switchMonthViewDefault.default.render(_modelDefault.default.state);
@@ -617,13 +619,23 @@ class Page {
         _tableIncomeViewDefault.default.render(_modelDefault.default.state);
         _sideExpenseViewDefault.default.render(_modelDefault.default.state);
         _sideIncomeViewDefault.default.render(_modelDefault.default.state);
+        _sideEntriesViewDefault.default.render(_modelDefault.default.state);
+        _sideEditEntryViewDefault.default.render(_modelDefault.default.state);
         // App screen handlers
         _headerViewDefault.default.addHandlerLogout(App.controlLogout);
         _switchMonthViewDefault.default.addHandlerSwitchMonth(App.controlSwitchMonth);
         _sideExpenseViewDefault.default.addHandlerForm(App.controlAddExpense);
         _sideIncomeViewDefault.default.addHandlerForm(App.controlAddIncome);
+        _sideEntriesViewDefault.default.addHandlerDeleteEntry(App.controlDeleteEntry);
+        _sideEntriesViewDefault.default.addHandlerShowEditEntry(App.controlShowEditEntry);
+        _tableExpenseViewDefault.default.addHandlerShowEntries(App.controlShowEntries);
+        _tableIncomeViewDefault.default.addHandlerShowEntries(App.controlShowEntries);
         // Activate elements
         App.activateElements();
+    }
+    // Helper
+    static setupEditEntrySide() {
+        _sideEditEntryViewDefault.default.addHandlerForm(App.controlEditEntry);
     }
 }
 class App {
@@ -631,7 +643,7 @@ class App {
         this.init();
     }
     /*
-     * INIT
+     * p
      */ async init() {
         try {
             // Render root
@@ -672,14 +684,14 @@ class App {
         }
     }
     /*
-     * CONTROL LOGIN FORMS
+     * CONTROL LOGIN
      */ static async processLoginForm(data, view, modelHandler, doRefresh, errorMessage) {
         try {
             view.startLoading();
             const response = await modelHandler(data);
             view.cleanForm();
             view.renderMessage('success', response.message);
-            if (doRefresh) _helpers.refresh();
+            _helpers.refresh();
         } catch (err) {
             view.renderMessage('error', err.message);
             if (err.fields) view.fieldsError(err.fields);
@@ -715,6 +727,7 @@ class App {
             _summaryViewDefault.default.update(_modelDefault.default.state);
             _tableExpenseViewDefault.default.update(_modelDefault.default.state);
             _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+            _sideEntriesViewDefault.default.closeAll();
         } catch (err) {
             console.log(err);
         } finally{
@@ -757,10 +770,78 @@ class App {
             _sideIncomeViewDefault.default.stopLoading();
         }
     }
+    /*
+     * CONTROL SHOW ENTRIES
+     */ static controlShowEntries(type, cat, day) {
+        _modelDefault.default.state = {
+            ..._modelDefault.default.state,
+            show_entries: {
+                type,
+                cat,
+                day
+            }
+        };
+        _sideEntriesViewDefault.default.update(_modelDefault.default.state);
+        _sideEntriesViewDefault.default.open();
+        _sideEditEntryViewDefault.default.close();
+    }
+    /*
+     * CONTROL DELETE ENTRY
+     */ static async controlDeleteEntry(id) {
+        try {
+            _sideEntriesViewDefault.default.startLoading();
+            const response = await _modelDefault.default.deleteEntry(id);
+            console.log('Response:', response);
+            console.log('state', _modelDefault.default.state);
+            _sideEntriesViewDefault.default.update(_modelDefault.default.state);
+            _summaryViewDefault.default.update(_modelDefault.default.state);
+            _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+            _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+            if (response.closeDay) _sideEntriesViewDefault.default.close();
+        } catch (err) {
+            console.log(err);
+        } finally{
+            _sideEntriesViewDefault.default.stopLoading();
+        }
+    }
+    /*
+     * CONTROL SHOW EDIT ENTRY
+     */ static controlShowEditEntry(id) {
+        const edit_entry = Object.values(_modelDefault.default.state.entries).flat().find((entry)=>parseInt(entry.id) === parseInt(id)
+        );
+        _modelDefault.default.state = {
+            ..._modelDefault.default.state,
+            edit_entry
+        };
+        _sideEditEntryViewDefault.default.update(_modelDefault.default.state);
+        Page.setupEditEntrySide();
+        _sideEditEntryViewDefault.default.open();
+    }
+    /*
+     * CONTROL EDIT ENTRY
+     */ static async controlEditEntry(data) {
+        try {
+            _sideEditEntryViewDefault.default.startLoading();
+            const response = await _modelDefault.default.editEntry(data);
+            _sideEditEntryViewDefault.default.update(_modelDefault.default.state);
+            Page.setupEditEntrySide();
+            _sideEditEntryViewDefault.default.renderMessage('success', response.message);
+            _sideEntriesViewDefault.default.update(_modelDefault.default.state);
+            _summaryViewDefault.default.update(_modelDefault.default.state);
+            _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+            _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+        } catch (err) {
+            _sideEditEntryViewDefault.default.renderMessage('error', err.message);
+            console.log(err);
+            if (err.fields) _sideEditEntryViewDefault.default.fieldsError(err.fields);
+        } finally{
+            _sideEditEntryViewDefault.default.stopLoading();
+        }
+    }
 }
 const app = new App();
 
-},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/elements/tableDrag":"1kCnj","./views/app/switchMonthView":"bvQyF"}],"95FYz":[function(require,module,exports) {
+},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/switchMonthView":"bvQyF","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/app/sideEntriesView":"7GwJs","./views/app/sideEditEntryView":"5C9dy","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","./views/elements/tableDrag":"1kCnj","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"95FYz":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');
@@ -15157,6 +15238,8 @@ parcelHelpers.export(exports, "monthNames", ()=>monthNames
 );
 parcelHelpers.export(exports, "formatAmount", ()=>formatAmount
 );
+parcelHelpers.export(exports, "formatDate", ()=>formatDate
+);
 parcelHelpers.export(exports, "getEntriesSum", ()=>getEntriesSum
 );
 parcelHelpers.export(exports, "truncate", ()=>truncate
@@ -15171,8 +15254,11 @@ const timeout = function(s) {
         }, s * 1000);
     });
 };
+let EXPENSY_AJAX_PROGRESS = false;
 const AJAX = async function(action, uploadData) {
     try {
+        if (EXPENSY_AJAX_PROGRESS) throw 'There is something in progress already...';
+        else EXPENSY_AJAX_PROGRESS = true;
         const options = {
             action,
             nonce: themeData.ajax_nonce,
@@ -15194,6 +15280,8 @@ const AJAX = async function(action, uploadData) {
         return data;
     } catch (err) {
         throw err;
+    } finally{
+        EXPENSY_AJAX_PROGRESS = false;
     }
 };
 const childOf = (c, p)=>{
@@ -15234,6 +15322,19 @@ const formatAmount = (amount, currency)=>{
         style: 'currency',
         currency: currency
     }).format(amount);
+};
+const formatDate = (str, type = 'full')=>{
+    const date = new Date(str);
+    let options = {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    };
+    if (type === 'short') options = {
+        month: 'short',
+        day: 'numeric'
+    };
+    return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 const getEntriesSum = (entries, type = null)=>{
     return Object.values(entries).flat().reduce((prev, curr)=>{
@@ -15278,6 +15379,7 @@ class Model {
     }
     async login(data) {
         try {
+            console.log(data);
             const response = await _helpers.AJAX('login', data);
             if (response.status) return response;
             else throw response.message;
@@ -15325,12 +15427,12 @@ class Model {
     }
     async switchMonth(data) {
         try {
-            const newMonth = _helpers.getPrevNextMonth(data, this.state.current_date.month, this.state.current_date.year);
+            const newMonth = _helpers.getPrevNextMonth(data, this.state.current_month.month, this.state.current_month.year);
             const response = await _helpers.AJAX('switch_month', newMonth);
             if (response.status) {
                 this.state.entries = response.entries;
                 this.state.starting_budget = response.starting_budget;
-                this.state.current_date = {
+                this.state.current_month = {
                     month: newMonth.month,
                     year: newMonth.year
                 };
@@ -15342,8 +15444,10 @@ class Model {
     }
     async addEntry(type, data) {
         try {
-            console.log(data);
-            const response = await _helpers.AJAX(`add_${type === 'inc' ? 'income' : 'expense'}`, data);
+            const response = await _helpers.AJAX('add_entry', {
+                ...data,
+                type
+            });
             if (response.status) {
                 if (!response.response) throw 'No ID for entry.';
                 this._stateAddEntry(response, data, type);
@@ -15353,12 +15457,55 @@ class Model {
             throw err;
         }
     }
+    async deleteEntry(id) {
+        try {
+            const response = await _helpers.AJAX('delete_entry', {
+                id
+            });
+            if (response.status) {
+                let dateRemove, catRemove;
+                const newEntries = Object.fromEntries(Object.entries(this.state.entries).map((day)=>{
+                    const newDay = day[1] ? day[1].filter((entry)=>{
+                        if (parseInt(entry.id) === parseInt(id)) {
+                            dateRemove = entry.date;
+                            catRemove = entry.cat;
+                            return false;
+                        } else return true;
+                    }) : [];
+                    return [
+                        day[0],
+                        newDay.length ? newDay : false
+                    ];
+                }));
+                this.state.entries = newEntries ? newEntries : [];
+                // Check if need to close SideEntriesView
+                // Need to check if have entries for specific date with specific cat
+                response.closeDay = !Object.values(this.state.entries).flat().filter((entry)=>Number.parseInt(entry.cat) === Number.parseInt(catRemove) && new Date(entry.date).getDay() === new Date(dateRemove).getDay()
+                ).length;
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async editEntry(data) {
+        try {
+            const response = await _helpers.AJAX('edit_entry', data);
+            if (response.status) {
+                this._stateEditEntry(data);
+                return response;
+            } else throw response.message;
+            console.log(data);
+        } catch (err) {
+            throw err;
+        }
+    }
     _stateAddEntry(response, data, type) {
         const entryDate = new Date(data.date);
-        if (entryDate.getFullYear() < parseInt(this.state.current_date.year) || entryDate.getMonth() + 1 < parseInt(this.state.current_date.month)) {
+        if (entryDate.getFullYear() < parseInt(this.state.current_month.year) || entryDate.getMonth() + 1 < parseInt(this.state.current_month.month)) {
             if (type === 'inc') this.state.starting_budget = parseFloat(this.state.starting_budget) + parseFloat(String(data.amount).replace(',', ''));
             else if (type === 'exp') this.state.starting_budget = parseFloat(this.state.starting_budget) - parseFloat(String(data.amount).replace(',', ''));
-        } else if (entryDate.getFullYear() === parseInt(this.state.current_date.year) && entryDate.getMonth() + 1 === parseInt(this.state.current_date.month)) {
+        } else if (entryDate.getFullYear() === parseInt(this.state.current_month.year) && entryDate.getMonth() + 1 === parseInt(this.state.current_month.month)) {
             const id = response.response;
             const entry = {
                 ...data,
@@ -15377,6 +15524,51 @@ class Model {
                 entry
             ];
         }
+    }
+    _stateEditEntry(data) {
+        // If date changed
+        if (data.date !== data.prev_date) {
+            // find the entry
+            const entry1 = Object.values(this.state.entries).flat().find((entry)=>parseInt(entry.id) === parseInt(data.id)
+            );
+            // Set the day if it doesn't exist
+            if (typeof this.state.entries[data.date] === 'undefined') this.state.entries[data.date] = [];
+            // Remove entry from the previous place
+            this.state.entries = Object.fromEntries(Object.entries(this.state.entries).map((day)=>[
+                    day[0],
+                    day[1].filter((entry)=>Number.parseInt(entry.id) !== Number.parseInt(data.id)
+                    ), 
+                ]
+            ));
+            // Push new entry to the day object
+            this.state.entries[data.date].unshift({
+                ...entry1,
+                amount: Number.parseFloat(String(data.amount).replaceAll(',', '')),
+                cat: data.cat,
+                date: data.date,
+                note: data.note
+            });
+        } else // If date isn't changed
+        this.state.entries = Object.fromEntries(Object.entries(this.state.entries).map((day)=>[
+                day[0],
+                day[1].map((entry)=>{
+                    return Number.parseInt(entry.id) === Number.parseInt(data.id) ? {
+                        ...entry,
+                        amount: Number.parseFloat(String(data.amount).replaceAll(',', '')),
+                        cat: data.cat,
+                        date: data.date,
+                        note: data.note
+                    } : entry;
+                }), 
+            ]
+        ));
+        this.state.edit_entry = {
+            ...this.state.edit_entry,
+            amount: Number.parseFloat(String(data.amount).replaceAll(',', '')),
+            cat: data.cat,
+            date: data.date,
+            note: data.note
+        };
     }
 }
 exports.default = new Model();
@@ -15521,6 +15713,7 @@ class View {
         else root.classList.remove('wide');
     }
     addHandlerForm(handler) {
+        if (!this.form) return;
         this.form.addEventListener('submit', (e)=>{
             e.preventDefault();
             const check = this.checkFields(e.target);
@@ -15567,6 +15760,9 @@ class View {
         });
         if (!response.status) return response;
         return response;
+    }
+    isToday(i) {
+        return parseInt(this.data.today.day) === i + 1 && parseInt(this.data.today.month) === parseInt(this.data.current_month.month) && parseInt(this.data.today.year) === parseInt(this.data.current_month.year);
     }
 }
 exports.default = View;
@@ -24769,7 +24965,9 @@ class SideLoginView extends _sideViewDefault.default {
                 </svg>
             </a>
         </div>
-        <h2 class="side__title">Login</h2>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Login</h2>
+        </div>
         `;
     }
     markup() {
@@ -24814,6 +25012,14 @@ parcelHelpers.defineInteropFlag(exports);
 var _view = require("./View");
 var _viewDefault = parcelHelpers.interopDefault(_view);
 var _helpers = require("../helpers");
+var _popup = require("./elements/popup");
+var _popupDefault = parcelHelpers.interopDefault(_popup);
+var _forms = require("./elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+var _select = require("./elements/select");
+var _selectDefault = parcelHelpers.interopDefault(_select);
+var _numberInput = require("./elements/numberInput");
+var _numberInputDefault = parcelHelpers.interopDefault(_numberInput);
 class SideView extends _viewDefault.default {
     constructor(){
         super();
@@ -24846,10 +25052,91 @@ class SideView extends _viewDefault.default {
         else this.inner.insertAdjacentHTML('beforeend', markup);
         this.parentElement.insertAdjacentElement('beforeend', this.side);
     }
+    open() {
+        const side = document.querySelector(`#${this.id}`);
+        if (!side) return;
+        document.querySelectorAll('.side').forEach((el)=>el.style.zIndex = 'auto'
+        );
+        side.style.zIndex = '9';
+        side.classList.add('active');
+    }
+    close() {
+        const side = document.querySelector(`#${this.id}`);
+        if (!side) return;
+        side.style.zIndex = 'auto';
+        side.classList.remove('active');
+    }
+    closeAll() {
+        document.querySelectorAll('.side').forEach((el)=>{
+            el.style.zIndex = 'auto';
+            el.classList.remove('active');
+        });
+    }
+    update(data) {
+        this.data = data;
+        // Update header
+        const newHeaderMarkup = this.headerMarkup();
+        const newHeaderDOM = document.createRange().createContextualFragment(newHeaderMarkup);
+        const newHeaderElement = newHeaderDOM.querySelector('.side__title-wrap');
+        const curHeaderElement = this.targetElement.querySelector('.side__title-wrap');
+        if (!newHeaderElement.isEqualNode(curHeaderElement)) curHeaderElement.innerHTML = newHeaderElement.innerHTML;
+        // Update body
+        const newBodyMarkup = this.markup();
+        const newBodyElement = document.createRange().createContextualFragment(newBodyMarkup);
+        const curBodyElement = this.targetElement.querySelector('.side__inner');
+        if (!newBodyElement.isEqualNode(curBodyElement.firstChild)) {
+            if (newBodyMarkup instanceof Element || newBodyMarkup instanceof HTMLDocument) {
+                curBodyElement.innerHTML = '';
+                curBodyElement.insertAdjacentElement('beforeend', newBodyMarkup);
+            } else curBodyElement.innerHTML = newBodyMarkup;
+        }
+        // Reactivate Popups
+        _popupDefault.default.activate(curBodyElement);
+        _selectDefault.default.activate(curBodyElement);
+        _numberInputDefault.default.activate(curBodyElement);
+        if (this.form) _formsDefault.default.setEvents(this.form);
+    }
 }
 exports.default = SideView;
 
-},{"./View":"9dvKv","../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4tFue":[function(require,module,exports) {
+},{"./View":"9dvKv","../helpers":"9RX9R","./elements/popup":"9OSuq","./elements/forms":"4tFue","./elements/select":"hvZUh","./elements/numberInput":"8iPnT","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"9OSuq":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _helpers = require("../../helpers");
+class PopupElement {
+    constructor(el){
+        this.el = el;
+        this.popup = this.el.querySelector('.popup__content');
+        this._events();
+    }
+    _events() {
+        this.el.addEventListener('click', this._processShow.bind(this));
+        document.addEventListener('click', this._processHide.bind(this));
+    }
+    _processShow(e) {
+        this.show();
+    }
+    _processHide(e) {
+        if (this.popup.classList.contains('active') && !e.target.closest('.popup') && !_helpers.childOf(e.target, this.el)) this.hide();
+    }
+    show() {
+        this.popup.classList.add('active');
+    }
+    hide() {
+        this.popup.classList.remove('active');
+    }
+}
+class Popup {
+    activate(parent = null) {
+        if (!parent) document.querySelectorAll('.popup')?.forEach((el)=>new PopupElement(el)
+        );
+        else parent.querySelectorAll('.popup')?.forEach((el)=>new PopupElement(el)
+        );
+    }
+}
+exports.default = new Popup();
+
+},{"../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4tFue":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class Forms {
@@ -24897,6 +25184,9 @@ class Forms {
                 ${data.btn ? `<a href="${data.btn.link ? data.btn.link : '#'}" ${data.btn.open ? `data-side-open="${data.btn.open}"` : ''} ${data.btn.close ? `data-side-close="${data.btn.close}"` : ''} class="btn-link">${data.btn.title}</a>` : ''}
             </div>
             `;
+        if (type === 'hidden') return `
+            <input type="hidden" name="${data.name}" value="${data.value ? data.value : ''}" />
+            `;
         // Return nothing if unknown type
         return '';
     }
@@ -24915,464 +25205,7 @@ class Forms {
 }
 exports.default = new Forms();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"kpUTc":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _sideView = require("../sideView");
-var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
-var _forms = require("../elements/forms");
-var _formsDefault = parcelHelpers.interopDefault(_forms);
-class SideResetView extends _sideViewDefault.default {
-    constructor(){
-        super();
-        this.id = 'reset';
-    }
-    setParent() {
-        this.parentElement = document.querySelector('.sides');
-    }
-    headerMarkup() {
-        return `
-        <div class="side__nav">
-            <a href="#" data-side-close="${this.id}" class="btn-link">Login</a>
-        </div>
-        <h2 class="side__title">Reset password</h2>
-        `;
-    }
-    markup() {
-        this.form = _formsDefault.default.form(this.id);
-        const markup = `
-        ${_formsDefault.default.field('text', {
-            id: this.id,
-            name: 'email',
-            label: 'Email',
-            autocomplete: 'email',
-            required: true
-        })}
-        ${_formsDefault.default.submit('Reset password')}
-        `;
-        this.form.insertAdjacentHTML('afterbegin', markup);
-        _formsDefault.default.setEvents(this.form);
-        return this.form;
-    }
-}
-exports.default = new SideResetView();
-
-},{"../sideView":"gcAW0","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"8jgGO":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _sideView = require("../sideView");
-var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
-var _forms = require("../elements/forms");
-var _formsDefault = parcelHelpers.interopDefault(_forms);
-class SideRegisterView extends _sideViewDefault.default {
-    constructor(){
-        super();
-        this.id = 'register';
-    }
-    setParent() {
-        this.parentElement = document.querySelector('.sides');
-    }
-    headerMarkup() {
-        return `
-        <div class="side__nav">
-            <a href="#" data-side-close="${this.id}" class="btn-link">Login</a>
-        </div>
-        <h2 class="side__title">Register</h2>
-        `;
-    }
-    markup() {
-        this.form = _formsDefault.default.form(this.id);
-        const markup = `
-        ${_formsDefault.default.field('text', {
-            id: this.id,
-            name: 'name',
-            label: 'Your name',
-            autocomplete: 'given-name',
-            required: true
-        })}
-        ${_formsDefault.default.field('text', {
-            id: this.id,
-            name: 'email',
-            label: 'Email',
-            autocomplete: 'email',
-            required: true
-        })}
-        ${_formsDefault.default.field('password', {
-            id: this.id,
-            name: 'password',
-            label: 'Password',
-            autocomplete: 'new-password',
-            required: true
-        })}
-        ${_formsDefault.default.field('password', {
-            id: this.id,
-            name: 'confirm_password',
-            label: 'Confirm password',
-            autocomplete: 'new-password',
-            required: true
-        })}
-        ${_formsDefault.default.submit('Register')}
-        `;
-        this.form.insertAdjacentHTML('afterbegin', markup);
-        _formsDefault.default.setEvents(this.form);
-        return this.form;
-    }
-}
-exports.default = new SideRegisterView();
-
-},{"../sideView":"gcAW0","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fwaKU":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _view = require("../View");
-var _viewDefault = parcelHelpers.interopDefault(_view);
-var _helpers = require("../../helpers");
-var _config = require("../../config");
-class SummaryView extends _viewDefault.default {
-    constructor(){
-        super();
-    }
-    setParent() {
-        this.parentElement = document.querySelector('#summary');
-    }
-    markup() {
-        const income = _helpers.getEntriesSum(this.data.entries, 'inc');
-        const expense = _helpers.getEntriesSum(this.data.entries, 'exp');
-        const available = parseFloat(this.data.starting_budget) + parseFloat(income) - parseFloat(expense);
-        const startingText = _helpers.formatAmount(this.data.starting_budget, this.data.account.currency);
-        const incomeText = _helpers.formatAmount(income, this.data.account.currency);
-        const expenseText = _helpers.formatAmount(expense, this.data.account.currency);
-        const availableText = _helpers.formatAmount(available, this.data.account.currency);
-        return `
-        <div class="content__section">
-            <h4 class="content__section__title">${_helpers.monthNames[parseInt(this.data.current_date.month) - 1]} ${this.data.current_date.year}</h4>
-            <ul id="summary" class="summary ${startingText.length > _config.SUM_FONT_SWITCH_CHAR || incomeText.length > _config.SUM_FONT_SWITCH_CHAR || expenseText.length > _config.SUM_FONT_SWITCH_CHAR || availableText.length > _config.SUM_FONT_SWITCH_CHAR ? 'summary--small' : ''}">
-                <li>
-                    <span class="summary__heading">Starting budget</span>
-                    <span class="summary__data" id="summary_starting">${startingText}</span>
-                </li>
-                <li>
-                    <span class="summary__heading">Income</span>
-                    <span class="summary__data" id="summary_income">${incomeText}</span>
-                </li>
-                <li>
-                    <span class="summary__heading">Expenses</span>
-                    <span class="summary__data" id="summary_expenses">${expenseText}</span>
-                </li>
-                <li>
-                    <span class="summary__heading">Available budget</span>
-                    <span class="summary__data" id="summary_available">${availableText}</span>
-                </li>
-            </ul>
-        </div>
-        `;
-    }
-}
-exports.default = new SummaryView();
-
-},{"../View":"9dvKv","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","../../config":"6V52N"}],"1qJsD":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _sideView = require("../sideView");
-var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
-var _iconsSvg = require("url:../../../imgs/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
-var _forms = require("../elements/forms");
-var _formsDefault = parcelHelpers.interopDefault(_forms);
-var _helpers = require("../../helpers");
-class SideExpenseView extends _sideViewDefault.default {
-    constructor(){
-        super();
-        this.id = 'add_expense';
-    }
-    setParent() {
-        this.parentElement = document.querySelector('.sides');
-    }
-    headerMarkup() {
-        return `
-        <div class="side__nav">
-            <a href="#" data-side-open="add_income" class="btn-link">Add income</a>
-            <a href="#" data-side-close="${this.id}" class="hide-for-large">
-                <svg height="21" width="21">
-                    <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
-                </svg>
-            </a>
-        </div>
-        <h2 class="side__title">Expense</h2>
-        `;
-    }
-    markup() {
-        this.form = _formsDefault.default.form(this.id);
-        const cats = this.data.cats.filter((cat)=>cat.type === 'exp'
-        );
-        const markup = `
-        ${_formsDefault.default.field('date', {
-            id: this.id,
-            name: 'date',
-            label: 'Date',
-            required: true,
-            value: _helpers.getToday()
-        })}
-        ${_formsDefault.default.field('number', {
-            id: this.id,
-            name: 'amount',
-            label: 'Amount',
-            required: true,
-            placeholder: '0.00',
-            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`
-        })}
-        ${_formsDefault.default.field('select', {
-            id: this.id,
-            name: 'cat',
-            label: 'Category',
-            options: cats.map((cat, i)=>{
-                return {
-                    value: cat.id,
-                    content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
-                    selected: i === 0
-                };
-            }),
-            btn: {
-                title: 'Manage categories',
-                open: 'expenses_cats'
-            },
-            required: true
-        })}
-        ${_formsDefault.default.field('textarea', {
-            id: this.id,
-            name: 'note',
-            label: 'Note'
-        })}
-        ${_formsDefault.default.submit('Add expense')}
-        `;
-        this.form.insertAdjacentHTML('afterbegin', markup);
-        _formsDefault.default.setEvents(this.form);
-        return this.form;
-    }
-}
-exports.default = new SideExpenseView();
-
-},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4OLon":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _sideView = require("../sideView");
-var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
-var _iconsSvg = require("url:../../../imgs/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
-var _forms = require("../elements/forms");
-var _formsDefault = parcelHelpers.interopDefault(_forms);
-var _helpers = require("../../helpers");
-class SideIncomeView extends _sideViewDefault.default {
-    constructor(){
-        super();
-        this.id = 'add_income';
-    }
-    setParent() {
-        this.parentElement = document.querySelector('.sides');
-    }
-    headerMarkup() {
-        return `
-        <div class="side__nav">
-            <a href="#" data-side-close="add_income" class="btn-link">Add expense</a>
-        </div>
-        <h2 class="side__title">Income</h2>
-        `;
-    }
-    markup() {
-        this.form = _formsDefault.default.form(this.id);
-        const cats = this.data.cats.filter((cat)=>cat.type === 'inc'
-        );
-        const markup = `
-        ${_formsDefault.default.field('date', {
-            id: this.id,
-            name: 'date',
-            label: 'Date',
-            required: true,
-            value: _helpers.getToday()
-        })}
-        ${_formsDefault.default.field('number', {
-            id: this.id,
-            name: 'amount',
-            label: 'Amount',
-            required: true,
-            placeholder: '0.00',
-            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`
-        })}
-        ${_formsDefault.default.field('select', {
-            id: this.id,
-            name: 'cat',
-            label: 'Category',
-            options: cats.map((cat, i)=>{
-                return {
-                    value: cat.id,
-                    content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
-                    selected: i === 0
-                };
-            }),
-            btn: {
-                title: 'Manage categories',
-                open: 'expenses_cats'
-            }
-        })}
-        ${_formsDefault.default.field('textarea', {
-            id: this.id,
-            name: 'note',
-            label: 'Note'
-        })}
-        ${_formsDefault.default.submit('Add income', 'success')}
-        `;
-        this.form.insertAdjacentHTML('afterbegin', markup);
-        _formsDefault.default.setEvents(this.form);
-        return this.form;
-    }
-}
-exports.default = new SideIncomeView();
-
-},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"3y9dW":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _view = require("../View");
-var _viewDefault = parcelHelpers.interopDefault(_view);
-var _iconsSvg = require("url:../../../imgs/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
-var _forms = require("../elements/forms");
-var _formsDefault = parcelHelpers.interopDefault(_forms);
-var _featuredBlock = require("../elements/featuredBlock");
-var _featuredBlockDefault = parcelHelpers.interopDefault(_featuredBlock);
-class SetupView extends _viewDefault.default {
-    constructor(){
-        super();
-        this.id = 'setup';
-    }
-    setParent() {
-        this.parentElement = document.querySelector('.content__inner');
-    }
-    markup() {
-        const block = _featuredBlockDefault.default.getBlock('Setup');
-        this.form = _formsDefault.default.form(this.id);
-        const formMarkup = `
-        ${_formsDefault.default.field('number', {
-            id: this.id,
-            name: 'starting_budget',
-            label: 'Starting budget',
-            placeholder: '0.00'
-        })}
-        ${_formsDefault.default.field('select', {
-            id: this.id,
-            name: 'currency',
-            label: 'Currency',
-            options: [
-                {
-                    value: 'usd',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg><span>Dollar</span>`,
-                    selected: true
-                },
-                {
-                    value: 'eur',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-euro"></use></svg><span>Euro</span>`
-                },
-                {
-                    value: 'rub',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-ruble"></use></svg><span>Ruble</span>`
-                }, 
-            ]
-        })}
-        ${_formsDefault.default.submit("Let's go!")}
-        `;
-        this.form.insertAdjacentHTML('afterbegin', formMarkup);
-        block.insertAdjacentElement('beforeend', this.form);
-        return block;
-    }
-}
-exports.default = new SetupView();
-
-},{"../View":"9dvKv","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","../elements/featuredBlock":"k52mS"}],"k52mS":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-class FeaturedBlock {
-    getBlock(heading = '') {
-        const block = document.createElement('div');
-        block.classList.add('featured-block');
-        if (heading) {
-            const headingEl = document.createElement('h2');
-            headingEl.classList.add('featured-block__title');
-            headingEl.textContent = heading;
-            block.insertAdjacentElement('beforeend', headingEl);
-        }
-        return block;
-    }
-}
-exports.default = new FeaturedBlock();
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"7yLQt":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-class Side {
-    activate() {
-        document.querySelectorAll('[data-side-open]').forEach((el1)=>{
-            el1.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.dataset.sideOpen;
-                const targetEl = document.querySelector(`#${targetId}`);
-                if (!targetEl) return;
-                document.querySelectorAll('.side').forEach((el)=>el.style.zIndex = 'auto'
-                );
-                targetEl.style.zIndex = '9';
-                targetEl.classList.add('active');
-            });
-        });
-        document.querySelectorAll('[data-side-close]').forEach((el)=>{
-            el.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.dataset.sideClose;
-                const targetEl = document.querySelector(`#${targetId}`);
-                if (!targetEl) return;
-                targetEl.style.zIndex = 'auto';
-                targetEl.classList.remove('active');
-            });
-        });
-    }
-}
-exports.default = new Side();
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fxINA":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _helpers = require("../../helpers");
-class DropdownElement {
-    constructor(el){
-        this.el = el;
-        this.link = el.querySelector('.nav-item__link');
-        this._events();
-    }
-    _events() {
-        this.link.addEventListener('click', this._processShow.bind(this));
-        document.addEventListener('click', this._processHide.bind(this));
-    }
-    _processShow(e) {
-        const dropdown = this.el.querySelector('.nav-item__dropdown');
-        if (!dropdown) return;
-        e.preventDefault();
-        this.show();
-    }
-    _processHide(e) {
-        if (this.el.classList.contains('active') && !e.target.closest('.nav-item__link') && !_helpers.childOf(e.target, this.link)) this.hide();
-    }
-    show() {
-        this.el.classList.add('active');
-    }
-    hide() {
-        this.el.classList.remove('active');
-    }
-}
-class Dropdown {
-    activate() {
-        document.querySelectorAll('.nav-item')?.forEach((el)=>new DropdownElement(el)
-        );
-    }
-}
-exports.default = new Dropdown();
-
-},{"../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hvZUh":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"hvZUh":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _iconsSvg = require("url:../../../imgs/icons.svg");
@@ -25463,8 +25296,10 @@ class SelectElement {
     }
 }
 class Select {
-    activate() {
-        document.querySelectorAll('.custom-select').forEach((el)=>new SelectElement(el)
+    activate(parent = null) {
+        if (!parent) document.querySelectorAll('.custom-select')?.forEach((el)=>new SelectElement(el)
+        );
+        else parent.querySelectorAll('.custom-select')?.forEach((el)=>new SelectElement(el)
         );
     }
 }
@@ -25485,6 +25320,9 @@ class NumberInputElement {
     _events() {
         this.input.addEventListener('input', this._processInput.bind(this));
         this.input.addEventListener('blur', this._polishInput.bind(this));
+        this.input.dispatchEvent(new Event('input', {
+            bubbles: true
+        }));
     }
     _polishInput(e) {
         const [integer, digits = ''] = this.input.value.split('.');
@@ -25516,15 +25354,568 @@ class NumberInputElement {
     }
 }
 class NumberInput {
-    activate() {
-        document.querySelectorAll('.input--number input')?.forEach((input)=>{
-            new NumberInputElement(input);
-        });
+    activate(parent = null) {
+        if (!parent) document.querySelectorAll('.input--number input')?.forEach((el)=>new NumberInputElement(el)
+        );
+        else parent.querySelectorAll('.input--number input')?.forEach((el)=>new NumberInputElement(el)
+        );
     }
 }
 exports.default = new NumberInput();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1oR1w":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"kpUTc":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+class SideResetView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'reset';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}" class="btn-link">Login</a>
+        </div>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Reset password</h2>
+        </div>
+        `;
+    }
+    markup() {
+        this.form = _formsDefault.default.form(this.id);
+        const markup = `
+        ${_formsDefault.default.field('text', {
+            id: this.id,
+            name: 'email',
+            label: 'Email',
+            autocomplete: 'email',
+            required: true
+        })}
+        ${_formsDefault.default.submit('Reset password')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        _formsDefault.default.setEvents(this.form);
+        return this.form;
+    }
+}
+exports.default = new SideResetView();
+
+},{"../sideView":"gcAW0","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"8jgGO":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+class SideRegisterView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'register';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}" class="btn-link">Login</a>
+        </div>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Register</h2>
+        </div>
+        `;
+    }
+    markup() {
+        this.form = _formsDefault.default.form(this.id);
+        const markup = `
+        ${_formsDefault.default.field('text', {
+            id: this.id,
+            name: 'name',
+            label: 'Your name',
+            autocomplete: 'given-name',
+            required: true
+        })}
+        ${_formsDefault.default.field('text', {
+            id: this.id,
+            name: 'email',
+            label: 'Email',
+            autocomplete: 'email',
+            required: true
+        })}
+        ${_formsDefault.default.field('password', {
+            id: this.id,
+            name: 'password',
+            label: 'Password',
+            autocomplete: 'new-password',
+            required: true
+        })}
+        ${_formsDefault.default.field('password', {
+            id: this.id,
+            name: 'confirm_password',
+            label: 'Confirm password',
+            autocomplete: 'new-password',
+            required: true
+        })}
+        ${_formsDefault.default.submit('Register')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        _formsDefault.default.setEvents(this.form);
+        return this.form;
+    }
+}
+exports.default = new SideRegisterView();
+
+},{"../sideView":"gcAW0","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"bvQyF":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _view = require("../View");
+var _viewDefault = parcelHelpers.interopDefault(_view);
+var _helpers = require("../../helpers");
+class SwitchMonthView extends _viewDefault.default {
+    constructor(){
+        super();
+    }
+    setParent() {
+        this.parentElement = document.querySelector('#switch-month');
+    }
+    markup() {
+        const prevMonth = _helpers.getPrevNextMonth('prev', this.data.current_month.month, this.data.current_month.year);
+        const nextMonth = _helpers.getPrevNextMonth('next', this.data.current_month.month, this.data.current_month.year);
+        return `
+        <button class="btn-link switch-month__btn" data-month="prev">${_helpers.monthNames[prevMonth.month - 1]} ${prevMonth.year}</button>
+        <button class="btn-link switch-month__btn" data-month="next">${_helpers.monthNames[nextMonth.month - 1]} ${nextMonth.year}</button>
+        `;
+    }
+    addHandlerSwitchMonth(handler) {
+        this.targetElement.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.switch-month__btn');
+            if (!btn) return;
+            const month = btn.dataset.month;
+            handler(month);
+        });
+    }
+}
+exports.default = new SwitchMonthView();
+
+},{"../View":"9dvKv","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fwaKU":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _view = require("../View");
+var _viewDefault = parcelHelpers.interopDefault(_view);
+var _helpers = require("../../helpers");
+var _config = require("../../config");
+class SummaryView extends _viewDefault.default {
+    constructor(){
+        super();
+    }
+    setParent() {
+        this.parentElement = document.querySelector('#summary');
+    }
+    markup() {
+        const income = _helpers.getEntriesSum(this.data.entries, 'inc');
+        const expense = _helpers.getEntriesSum(this.data.entries, 'exp');
+        const available = parseFloat(this.data.starting_budget) + parseFloat(income) - parseFloat(expense);
+        const startingText = _helpers.formatAmount(this.data.starting_budget, this.data.account.currency);
+        const incomeText = _helpers.formatAmount(income, this.data.account.currency);
+        const expenseText = _helpers.formatAmount(expense, this.data.account.currency);
+        const availableText = _helpers.formatAmount(available, this.data.account.currency);
+        return `
+        <div class="content__section">
+            <h4 class="content__section__title">${_helpers.monthNames[parseInt(this.data.current_month.month) - 1]} ${this.data.current_month.year}</h4>
+            <ul id="summary" class="summary ${startingText.length > _config.SUM_FONT_SWITCH_CHAR || incomeText.length > _config.SUM_FONT_SWITCH_CHAR || expenseText.length > _config.SUM_FONT_SWITCH_CHAR || availableText.length > _config.SUM_FONT_SWITCH_CHAR ? 'summary--small' : ''}">
+                <li>
+                    <span class="summary__heading">Starting budget</span>
+                    <span class="summary__data" id="summary_starting">${startingText}</span>
+                </li>
+                <li>
+                    <span class="summary__heading">Income</span>
+                    <span class="summary__data" id="summary_income">${incomeText}</span>
+                </li>
+                <li>
+                    <span class="summary__heading">Expenses</span>
+                    <span class="summary__data" id="summary_expenses">${expenseText}</span>
+                </li>
+                <li>
+                    <span class="summary__heading">Available budget</span>
+                    <span class="summary__data" id="summary_available">${availableText}</span>
+                </li>
+            </ul>
+        </div>
+        `;
+    }
+}
+exports.default = new SummaryView();
+
+},{"../View":"9dvKv","../../helpers":"9RX9R","../../config":"6V52N","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1qJsD":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+var _helpers = require("../../helpers");
+class SideExpenseView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'add_expense';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-open="add_income" class="btn-link">Add income</a>
+            <a href="#" data-side-close="${this.id}" class="hide-for-large">
+                <svg height="21" width="21">
+                    <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
+                </svg>
+            </a>
+        </div>
+        <div class="side__title-wrap">
+        <h2 class="side__title">Expense</h2>
+        </div>
+        `;
+    }
+    markup() {
+        this.form = _formsDefault.default.form(this.id);
+        const cats = this.data.cats.filter((cat)=>cat.type === 'exp'
+        );
+        const markup = `
+        ${_formsDefault.default.field('date', {
+            id: this.id,
+            name: 'date',
+            label: 'Date',
+            required: true,
+            value: _helpers.getToday()
+        })}
+        ${_formsDefault.default.field('number', {
+            id: this.id,
+            name: 'amount',
+            label: 'Amount',
+            required: true,
+            placeholder: '0.00',
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`
+        })}
+        ${_formsDefault.default.field('select', {
+            id: this.id,
+            name: 'cat',
+            label: 'Category',
+            options: cats.map((cat, i)=>{
+                return {
+                    value: cat.id,
+                    content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
+                    selected: i === 0
+                };
+            }),
+            btn: {
+                title: 'Manage categories',
+                open: 'expenses_cats'
+            },
+            required: true
+        })}
+        ${_formsDefault.default.field('textarea', {
+            id: this.id,
+            name: 'note',
+            label: 'Note'
+        })}
+        ${_formsDefault.default.submit('Add expense')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        _formsDefault.default.setEvents(this.form);
+        return this.form;
+    }
+}
+exports.default = new SideExpenseView();
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"4OLon":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+var _helpers = require("../../helpers");
+class SideIncomeView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'add_income';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="add_income" class="btn-link">Add expense</a>
+        </div>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Income</h2>
+        </div>
+        `;
+    }
+    markup() {
+        this.form = _formsDefault.default.form(this.id);
+        const cats = this.data.cats.filter((cat)=>cat.type === 'inc'
+        );
+        const markup = `
+        ${_formsDefault.default.field('date', {
+            id: this.id,
+            name: 'date',
+            label: 'Date',
+            required: true,
+            value: _helpers.getToday()
+        })}
+        ${_formsDefault.default.field('number', {
+            id: this.id,
+            name: 'amount',
+            label: 'Amount',
+            required: true,
+            placeholder: '0.00',
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`
+        })}
+        ${_formsDefault.default.field('select', {
+            id: this.id,
+            name: 'cat',
+            label: 'Category',
+            options: cats.map((cat, i)=>{
+                return {
+                    value: cat.id,
+                    content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
+                    selected: i === 0
+                };
+            }),
+            btn: {
+                title: 'Manage categories',
+                open: 'expenses_cats'
+            }
+        })}
+        ${_formsDefault.default.field('textarea', {
+            id: this.id,
+            name: 'note',
+            label: 'Note'
+        })}
+        ${_formsDefault.default.submit('Add income', 'success')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        _formsDefault.default.setEvents(this.form);
+        return this.form;
+    }
+}
+exports.default = new SideIncomeView();
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"7GwJs":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _helpers = require("../../helpers");
+class SideEntriesView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'entries';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}">
+                <svg height="21" width="21">
+                    <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
+                </svg>
+            </a>
+        </div>
+        <div class="side__title-wrap">
+        ${typeof this.data.show_entries !== 'undefined' ? `<div class="side__subtitle text-${this.data.show_entries.type === 'exp' ? 'cinnabar' : 'dingley'}">${this.data.show_entries.type === 'exp' ? 'Expense' : 'Income'}</div>
+        <div class="side__title">
+            <h2>${_helpers.formatDate(`${this.data.current_month.year}-${this.data.current_month.month}-${this.data.show_entries.day}`)}</h2>
+            <div class="cat">
+                <span class="cat-icon bg-${this.data.cats.filter((cat)=>cat.id === this.data.show_entries.cat
+        )[0].color}"></span>${this.data.cats.filter((cat)=>cat.id === this.data.show_entries.cat
+        )[0].name}
+            </div>
+        </div>` : ''}
+            
+        </div>
+        `;
+    }
+    markup() {
+        if (typeof this.data.show_entries === 'undefined') return '';
+        const cat = this.data.show_entries.cat;
+        const type = this.data.show_entries.type;
+        const day = this.data.show_entries.day;
+        const entries = Object.values(this.data.entries).flat().filter((entry)=>parseInt(entry.cat) === parseInt(cat) && entry.type === type && parseInt(new Date(entry.date).getDate()) === parseInt(day)
+        );
+        return `
+        <ul class="entries">
+        ${entries.map((entry)=>`
+        <li class="entry" data-id="${entry.id}">
+            ${entry.note ? `<div class="entry__title">${entry.note}</div>` : ''}
+            <div class="entry__amount">${_helpers.formatAmount(entry.amount, this.data.account.curency)}</div>
+            <div class="entry__actions">
+            <div class="entry__actions__item">
+                <button class="btn-link btn--edit">
+                Edit
+                </button>
+            </div>
+            <div class="entry__actions__item">
+                <div class="popup btn-link">
+                Delete
+                <div class="popup__content">
+                    <div class="question">
+                    <div class="question__text">Are you sure?</div>
+                    <button
+                        class="btn-small btn-small--cinnabar btn--delete"
+                    >
+                        Delete
+                    </button>
+                    </div>
+                </div>
+                </div>
+            </div>
+            </div>
+        </li>
+        `
+        ).join('')}
+        <ul>
+        `;
+    }
+    addHandlerShowEditEntry(handler) {
+        this.targetElement.addEventListener('click', (e)=>{
+            const deleteBtn = e.target.closest('.btn--edit');
+            if (!deleteBtn) return;
+            const id = deleteBtn.closest('li.entry').dataset.id;
+            handler(id);
+        });
+    }
+    addHandlerDeleteEntry(handler) {
+        this.targetElement.addEventListener('click', (e)=>{
+            const deleteBtn = e.target.closest('.btn--delete');
+            if (!deleteBtn) return;
+            const id = deleteBtn.closest('li.entry').dataset.id;
+            handler(id);
+        });
+    }
+}
+exports.default = new SideEntriesView();
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"5C9dy":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+var _helpers = require("../../helpers");
+class SideEditEntryView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'edit_entry';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        const entry = this.data.edit_entry;
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}">
+                <svg height="21" width="21">
+                    <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
+                </svg>
+            </a>
+        </div>
+        <div class="side__title-wrap">
+        ${typeof this.data.edit_entry !== 'undefined' ? `<div class="side__subtitle text-${this.data.show_entries.type === 'exp' ? 'cinnabar' : 'dingley'}">${this.data.show_entries.type === 'exp' ? 'Expense' : 'Income'}</div>
+           
+            <div class="side__title">
+                <h2>${_helpers.formatAmount(entry.amount, this.data.account.currency)}</h2>
+                <div class="side__title__description">${_helpers.formatDate(entry.date)}</div>
+                
+            </div>
+            ` : ''}
+        </div>
+        `;
+    }
+    markup() {
+        if (typeof this.data.edit_entry === 'undefined') return '';
+        const entry = this.data.edit_entry;
+        const date = new Date(entry.date);
+        const cats = this.data.cats.filter((cat)=>cat.type === entry.type
+        );
+        this.form = _formsDefault.default.form(this.id);
+        const markup = `
+        ${_formsDefault.default.field('date', {
+            id: this.id,
+            name: 'date',
+            label: 'Date',
+            required: true,
+            value: entry.date.match(/\d{4}-\d{1,2}-\d{1,2}/)[0]
+        })}
+        ${_formsDefault.default.field('number', {
+            id: this.id,
+            name: 'amount',
+            label: 'Amount',
+            required: true,
+            placeholder: '0.00',
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`,
+            value: Number.parseFloat(entry.amount).toFixed(2)
+        })}
+        ${_formsDefault.default.field('select', {
+            id: this.id,
+            name: 'cat',
+            label: 'Category',
+            options: cats.map((cat, i)=>{
+                return {
+                    value: cat.id,
+                    content: `<div class="cat"><span class="cat-icon bg-${cat.color}"></span>${cat.name}</div>`,
+                    selected: Number.parseInt(cat.id) === Number.parseInt(entry.cat)
+                };
+            }),
+            required: true
+        })}
+        ${_formsDefault.default.field('textarea', {
+            id: this.id,
+            name: 'note',
+            label: 'Note',
+            value: entry.note ? entry.note : ''
+        })}
+        ${_formsDefault.default.field('hidden', {
+            id: this.id,
+            name: 'id',
+            value: entry.id
+        })}
+        ${_formsDefault.default.field('hidden', {
+            id: this.id,
+            name: 'prev_data',
+            value: entry.date.match(/\d{4}-\d{1,2}-\d{1,2}/)[0]
+        })}
+        ${_formsDefault.default.submit('Update')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        return this.form;
+    }
+}
+exports.default = new SideEditEntryView();
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1oR1w":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _tableView = require("./tableView");
@@ -25562,11 +25953,11 @@ class TableView extends _viewDefault.default {
     getTableMarkup() {
         const cats = this.data.cats.filter((cat)=>cat.type === this.type
         );
-        const numberDays = new Date(this.data.current_date.year, this.data.current_date.month, 0).getDate();
-        const currentYear = this.data.current_date.year;
-        const currentMonth = this.data.current_date.month;
+        const numberDays = new Date(this.data.current_month.year, this.data.current_month.month, 0).getDate();
+        const currentYear = this.data.current_month.year;
+        const currentMonth = this.data.current_month.month;
         const dates = [];
-        for(let i1 = 1; i1 <= numberDays; i1++)dates.push(`${currentMonth}/${i1}`);
+        for(let i1 = 1; i1 <= numberDays; i1++)dates.push(_helpers.formatDate(`${currentYear}-${currentMonth}-${i1}`, 'short'));
         const sums = new Array(numberDays).fill(0);
         const markup = `
         <div id="${this.id}-calendar" class="cal">
@@ -25577,7 +25968,9 @@ class TableView extends _viewDefault.default {
                 ${cats.map((cat)=>`
                 <div class="cal-side__item">
                     <div class="cat">
-                        <span class="cat-icon bg-${cat.color}"></span>${_helpers.truncate(cat.name.trim(), _config.CAT_TRUNCATE_LENGTH)}
+                        <span class="cat-icon bg-${cat.color}"></span><span class="cat-content"><span class="cat-content__title">${_helpers.truncate(cat.name.trim(), _config.CAT_TRUNCATE_LENGTH)}</span><span class="cat-content__subtitle">${_helpers.formatAmount(Object.values(this.data.entries).flat().filter((entry)=>entry.cat === cat.id
+            ).reduce((prev, curr)=>prev + parseFloat(curr.amount)
+            , 0), this.data.account.currency)}</span></span>
                     </div>
                 </div>
                 `
@@ -25589,26 +25982,23 @@ class TableView extends _viewDefault.default {
             <div class="cal-table__container scroll">
                 <table class="cal-table">
                     <tr>
-                    ${dates.map((date)=>`<th>${date}</th>`
+                    ${dates.map((date, i)=>`<th class="${this.isToday(i) ? 'today' : ''}">${date}</th>`
         ).join('')}
                     </tr>
                     ${cats.map((cat)=>{
             let row = '';
             for(let i = 1; i <= numberDays; i++){
                 const key = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-                // Check if entries for this date exists
-                if (this.data.entries.hasOwnProperty(key)) {
-                    const sum = this.data.entries[key].filter((entry)=>entry.type === this.type && entry.cat === cat.id
-                    ).reduce((prev, curr)=>parseFloat(prev) + parseFloat(curr.amount)
-                    , 0);
-                    sums[i - 1] = sums[i - 1] + parseFloat(sum);
-                    row += `<td>${sum ? `<button class="btn-small btn-small--${cat.color}" data-side-open="entries">${_helpers.formatAmount(sum, this.data.account.currency)}</button>` : ''}</td>`;
-                } else row += `<td></td>`;
+                const sum = this.data.entries[key] ? this.data.entries[key]?.filter((entry)=>entry.type === this.type && entry.cat === cat.id
+                )?.reduce((prev, curr)=>parseFloat(prev) + parseFloat(curr.amount)
+                , 0) : 0;
+                sums[i - 1] = sum ? sums[i - 1] + parseFloat(sum) : sums[i - 1];
+                row += `<td class="${this.isToday(i - 1) ? 'today' : ''}">${sum ? `<button class="cal-table__entries btn-small btn-small--${cat.color}" data-cat="${cat.id}" data-day="${i}">${_helpers.formatAmount(sum, this.data.account.currency)}</button>` : ''}</td>`;
             }
             return `<tr>${row}</tr>`;
         }).join('')}
                     <tr>
-                        ${sums.map((sum)=>`<td>${_helpers.formatAmount(parseFloat(sum), this.data.account.currency)}</td>`
+                        ${sums.map((sum, i)=>`<td class="${this.isToday(i) ? 'today' : ''}">${_helpers.formatAmount(parseFloat(sum), this.data.account.currency)}</td>`
         ).join('')}
                     </tr>
                 </table>
@@ -25634,10 +26024,20 @@ class TableView extends _viewDefault.default {
             if (!newEl.isEqualNode(curEl)) curEl.innerHTML = newEl.innerHTML;
         });
     }
+    addHandlerShowEntries(handler) {
+        this.targetElement.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.cal-table__entries');
+            if (!btn) return;
+            e.preventDefault();
+            const cat = btn.dataset.cat;
+            const day = btn.dataset.day;
+            handler(this.type, cat, day);
+        });
+    }
 }
 exports.default = TableView;
 
-},{"../View":"9dvKv","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","../../config":"6V52N"}],"onJxd":[function(require,module,exports) {
+},{"../View":"9dvKv","../../helpers":"9RX9R","../../config":"6V52N","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"onJxd":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _tableView = require("./tableView");
@@ -25654,14 +26054,159 @@ class TableExpenseView extends _tableViewDefault.default {
     markup() {
         const table = this.getTableMarkup();
         return `
-        <h4 class="content__section__title">Expense</h4>
+        <h4 class="content__section__title">Expenses</h4>
         ${table}
         `;
     }
 }
 exports.default = new TableExpenseView();
 
-},{"./tableView":"hLL04","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1kCnj":[function(require,module,exports) {
+},{"./tableView":"hLL04","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"3y9dW":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _view = require("../View");
+var _viewDefault = parcelHelpers.interopDefault(_view);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+var _featuredBlock = require("../elements/featuredBlock");
+var _featuredBlockDefault = parcelHelpers.interopDefault(_featuredBlock);
+class SetupView extends _viewDefault.default {
+    constructor(){
+        super();
+        this.id = 'setup';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.content__inner');
+    }
+    markup() {
+        const block = _featuredBlockDefault.default.getBlock('Setup');
+        this.form = _formsDefault.default.form(this.id);
+        const formMarkup = `
+        ${_formsDefault.default.field('number', {
+            id: this.id,
+            name: 'starting_budget',
+            label: 'Starting budget',
+            placeholder: '0.00'
+        })}
+        ${_formsDefault.default.field('select', {
+            id: this.id,
+            name: 'currency',
+            label: 'Currency',
+            options: [
+                {
+                    value: 'usd',
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg><span>Dollar</span>`,
+                    selected: true
+                },
+                {
+                    value: 'eur',
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-euro"></use></svg><span>Euro</span>`
+                },
+                {
+                    value: 'rub',
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-ruble"></use></svg><span>Ruble</span>`
+                }, 
+            ]
+        })}
+        ${_formsDefault.default.submit("Let's go!")}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', formMarkup);
+        block.insertAdjacentElement('beforeend', this.form);
+        return block;
+    }
+}
+exports.default = new SetupView();
+
+},{"../View":"9dvKv","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../elements/featuredBlock":"k52mS","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"k52mS":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class FeaturedBlock {
+    getBlock(heading = '') {
+        const block = document.createElement('div');
+        block.classList.add('featured-block');
+        if (heading) {
+            const headingEl = document.createElement('h2');
+            headingEl.classList.add('featured-block__title');
+            headingEl.textContent = heading;
+            block.insertAdjacentElement('beforeend', headingEl);
+        }
+        return block;
+    }
+}
+exports.default = new FeaturedBlock();
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"7yLQt":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Side {
+    activate() {
+        document.querySelectorAll('[data-side-open]').forEach((el1)=>{
+            el1.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.sideOpen;
+                const targetEl = document.querySelector(`#${targetId}`);
+                if (!targetEl) return;
+                document.querySelectorAll('.side').forEach((el)=>el.style.zIndex = 'auto'
+                );
+                targetEl.style.zIndex = '9';
+                targetEl.classList.add('active');
+            });
+        });
+        document.querySelectorAll('[data-side-close]').forEach((el)=>{
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.sideClose;
+                const targetEl = document.querySelector(`#${targetId}`);
+                if (!targetEl) return;
+                targetEl.style.zIndex = 'auto';
+                targetEl.classList.remove('active');
+            });
+        });
+    }
+}
+exports.default = new Side();
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fxINA":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _helpers = require("../../helpers");
+class DropdownElement {
+    constructor(el){
+        this.el = el;
+        this.link = el.querySelector('.nav-item__link');
+        this._events();
+    }
+    _events() {
+        this.link.addEventListener('click', this._processShow.bind(this));
+        document.addEventListener('click', this._processHide.bind(this));
+    }
+    _processShow(e) {
+        const dropdown = this.el.querySelector('.nav-item__dropdown');
+        if (!dropdown) return;
+        e.preventDefault();
+        this.show();
+    }
+    _processHide(e) {
+        if (this.el.classList.contains('active') && !e.target.closest('.nav-item__link') && !_helpers.childOf(e.target, this.link)) this.hide();
+    }
+    show() {
+        this.el.classList.add('active');
+    }
+    hide() {
+        this.el.classList.remove('active');
+    }
+}
+class Dropdown {
+    activate() {
+        document.querySelectorAll('.nav-item')?.forEach((el)=>new DropdownElement(el)
+        );
+    }
+}
+exports.default = new Dropdown();
+
+},{"../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"1kCnj":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 class TableDragElement {
@@ -25705,38 +26250,6 @@ class TableDrag {
 }
 exports.default = new TableDrag();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"bvQyF":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _view = require("../View");
-var _viewDefault = parcelHelpers.interopDefault(_view);
-var _helpers = require("../../helpers");
-class SwitchMonthView extends _viewDefault.default {
-    constructor(){
-        super();
-    }
-    setParent() {
-        this.parentElement = document.querySelector('#switch-month');
-    }
-    markup() {
-        const prevMonth = _helpers.getPrevNextMonth('prev', this.data.current_date.month, this.data.current_date.year);
-        const nextMonth = _helpers.getPrevNextMonth('next', this.data.current_date.month, this.data.current_date.year);
-        return `
-        <button class="btn-link switch-month__btn" data-month="prev">${_helpers.monthNames[prevMonth.month - 1]} ${prevMonth.year}</button>
-        <button class="btn-link switch-month__btn" data-month="next">${_helpers.monthNames[nextMonth.month - 1]} ${nextMonth.year}</button>
-        `;
-    }
-    addHandlerSwitchMonth(handler) {
-        this.targetElement.addEventListener('click', (e)=>{
-            const btn = e.target.closest('.switch-month__btn');
-            if (!btn) return;
-            const month = btn.dataset.month;
-            handler(month);
-        });
-    }
-}
-exports.default = new SwitchMonthView();
-
-},{"../View":"9dvKv","../../helpers":"9RX9R","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
 
 //# sourceMappingURL=app.js.map

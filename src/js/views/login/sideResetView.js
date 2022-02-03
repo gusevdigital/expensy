@@ -16,7 +16,9 @@ class SideResetView extends SideView {
         <div class="side__nav">
             <a href="#" data-side-close="${this.id}" class="btn-link">Login</a>
         </div>
-        <h2 class="side__title">Reset password</h2>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Reset password</h2>
+        </div>
         `;
     }
 

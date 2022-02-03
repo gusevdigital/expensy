@@ -42,3 +42,12 @@ function expensy_remove_wp_block_library_css()
     wp_dequeue_style('wc-block-style');
 }
 add_action('wp_enqueue_scripts', 'expensy_remove_wp_block_library_css', 100);
+
+// Remove embed.min.js
+function expensy_remove_embed_js()
+{
+    if (!is_admin()) {
+        wp_deregister_script('wp-embed');
+    }
+}
+add_action('init', 'expensy_remove_embed_js');

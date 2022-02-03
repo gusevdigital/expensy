@@ -8,8 +8,13 @@ const timeout = function (s) {
     });
 };
 
+let EXPENSY_AJAX_PROGRESS = false;
+
 export const AJAX = async function (action, uploadData = undefined) {
     try {
+        if (EXPENSY_AJAX_PROGRESS)
+            throw 'There is something in progress already...';
+        else EXPENSY_AJAX_PROGRESS = true;
         const options = {
             action,
             nonce: themeData.ajax_nonce,
@@ -33,6 +38,8 @@ export const AJAX = async function (action, uploadData = undefined) {
         return data;
     } catch (err) {
         throw err;
+    } finally {
+        EXPENSY_AJAX_PROGRESS = false;
     }
 };
 
@@ -81,6 +88,22 @@ export const formatAmount = (amount, currency) => {
         style: 'currency',
         currency: currency,
     }).format(amount);
+};
+
+export const formatDate = (str, type = 'full') => {
+    const date = new Date(str);
+    let options = {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+    };
+    if (type === 'short')
+        options = {
+            month: 'short',
+            day: 'numeric',
+        };
+
+    return new Intl.DateTimeFormat('en-US', options).format(date);
 };
 
 export const getEntriesSum = (entries, type = null) => {

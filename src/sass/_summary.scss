@@ -7,13 +7,17 @@
     border: $border-width solid $black;
     border-radius: $radius-small;
 
+    @include breakpoint(xxlarge) {
+        max-width: 900px;
+    }
+
     li {
         display: flex;
         flex-direction: column;
         padding: 1rem;
         width: 50%;
 
-        @include breakpoint(large) {
+        @include breakpoint(xlarge) {
             width: 25%;
         }
     }

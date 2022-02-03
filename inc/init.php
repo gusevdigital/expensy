@@ -19,8 +19,9 @@ function expensy_get_init_data()
     $currency = get_user_meta($user_id, 'expensy_currency', true);
 
     // Current date
-    $month = date('m');
-    $year = date('Y');
+    $month = intval(date('m'));
+    $year = intval(date('Y'));
+    $day = intval(date('d'));
 
     // Starting budget
     $starting_budget = expensy_get_starting_budget($month, $year);
@@ -40,9 +41,14 @@ function expensy_get_init_data()
             'email' => $email,
             'currency' => $currency
         ],
-        'current_date' => [
+        'current_month' => [
             'year' => $year,
             'month' => $month
+        ],
+        'today' => [
+            'year' => $year,
+            'month' => $month,
+            'day' => $day
         ],
         'starting_budget' => $starting_budget,
         'entries' => $entries,

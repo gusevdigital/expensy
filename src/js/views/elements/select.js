@@ -122,10 +122,15 @@ class SelectElement {
 }
 
 class Select {
-    activate() {
-        document
-            .querySelectorAll('.custom-select')
-            .forEach(el => new SelectElement(el));
+    activate(parent = null) {
+        if (!parent)
+            document
+                .querySelectorAll('.custom-select')
+                ?.forEach(el => new SelectElement(el));
+        else
+            parent
+                .querySelectorAll('.custom-select')
+                ?.forEach(el => new SelectElement(el));
     }
 }
 

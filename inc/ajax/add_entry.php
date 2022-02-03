@@ -1,8 +1,8 @@
 <?php
 
-add_action('wp_ajax_add_expense', 'expensy_ajax_add_expense');
+add_action('wp_ajax_add_entry', 'expensy_ajax_add_entry');
 
-function expensy_ajax_add_expense()
+function expensy_ajax_add_entry()
 {
     if (!wp_verify_nonce($_POST['nonce'], 'ajax-nonce')) {
         wp_die(json_encode([
@@ -12,36 +12,37 @@ function expensy_ajax_add_expense()
     }
 
     // Check data
-    $check = expensy_check_expense_data($_POST);
+    $check = expensy_check_entry_data($_POST);
     if (!$check['status']) {
         wp_die(json_encode($check));
     }
 
-    // Add expense
+    // Add entry
     $entry_id = expensy_create_entry([
         'date' => $_POST['date'],
         'type' => $_POST['type'],
         'amount' => $_POST['amount'],
-        'type' => 'exp',
         'cat' => $_POST['cat'],
         'note' => isset($_POST['note']) && $_POST['note'] ? $_POST['note'] : ''
     ]);
 
     if ($entry_id) wp_die(json_encode([
         'status' => 1,
-        'message' => 'Expense added!',
+        'message' => $_POST['type'] === 'inc' ? 'Income added!' : 'Expense added!',
         'response' => intval($entry_id)
     ]));
 
     // KBAI!
     wp_die(json_encode([
         'status' => 0,
-        'message' => 'Failed to add expense.'
+        'message' => 'Failed to add income.'
     ]));
 }
 
-function expensy_check_expense_data($data) {
+function expensy_check_entry_data($data)
+{
     // Check require
+    $required = [];
     if (empty($data['date'])) $required[] = 'date';
     if (empty($data['amount'])) $required[] = 'amount';
     if (empty($data['cat'])) $required[] = 'cat';

@@ -390,7 +390,6 @@ a:hover {
   position: relative;
   display: flex;
   background-color: #FAF8FF;
-  max-width: 90rem;
   margin: 0 auto;
   overflow: hidden;
   min-height: 100vh;
@@ -407,11 +406,6 @@ a:hover {
     min-height: auto;
     height: calc(100vh - 6rem);
     padding-right: 30rem;
-  }
-}
-@media only screen and (min-width: 105rem) {
-  #root {
-    max-width: 110rem;
   }
 }
 #root.wide {
@@ -622,6 +616,9 @@ a:hover {
 }
 .side__title {
   margin-bottom: 2rem;
+}
+.side__title h2 {
+  margin-bottom: 0.5rem;
 }
 .side__subtitle {
   font-size: 1rem;
@@ -1107,6 +1104,18 @@ button {
   border-radius: 7px;
   margin-right: 0.7rem;
 }
+.cat-content {
+  display: inline-flex;
+  flex-direction: column;
+}
+.cat-content__title {
+  line-height: 1;
+}
+.cat-content__subtitle {
+  font-size: 0.857rem;
+  font-weight: 600;
+  line-height: 1;
+}
 .cat-list {
   list-style: none;
   padding: 0;
@@ -1154,13 +1163,18 @@ button {
   border: 2px solid #09090B;
   border-radius: 7px;
 }
+@media only screen and (min-width: 105rem) {
+  .summary {
+    max-width: 900px;
+  }
+}
 .summary li {
   display: flex;
   flex-direction: column;
   padding: 1rem;
   width: 50%;
 }
-@media only screen and (min-width: 65.625rem) {
+@media only screen and (min-width: 78.75rem) {
   .summary li {
     width: 25%;
   }
@@ -1295,6 +1309,10 @@ button {
   white-space: nowrap;
   border-bottom: 2px solid #09090B;
 }
+.cal-table th.today,
+.cal-table td.today {
+  background-color: #dddcf8;
+}
 .cal-table tr:last-of-type th,
 .cal-table tr:last-of-type td {
   border-bottom-width: 0;
@@ -1323,7 +1341,7 @@ button {
   }
 }
 .entries .entry__actions {
-  padding-top: 1rem;
+  padding-top: 0.5rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1344,14 +1362,14 @@ button {
   position: absolute;
   bottom: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-45%);
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   background-color: #FFFFFF;
   border: 2px solid #5450DC;
   border-radius: 7px;
   white-space: nowrap;
-  z-index: 99;
+  z-index: 49;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0.3s, opacity 0.3s;

@@ -18,7 +18,9 @@ class SideIncomeView extends SideView {
         <div class="side__nav">
             <a href="#" data-side-close="add_income" class="btn-link">Add expense</a>
         </div>
-        <h2 class="side__title">Income</h2>
+        <div class="side__title-wrap">
+            <h2 class="side__title">Income</h2>
+        </div>
         `;
     }
 

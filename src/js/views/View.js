@@ -130,6 +130,7 @@ export default class View {
     }
 
     addHandlerForm(handler) {
+        if (!this.form) return;
         this.form.addEventListener('submit', e => {
             e.preventDefault();
 
@@ -195,5 +196,15 @@ export default class View {
         if (!response.status) return response;
 
         return response;
+    }
+
+    isToday(i) {
+        return (
+            parseInt(this.data.today.day) === i + 1 &&
+            parseInt(this.data.today.month) ===
+                parseInt(this.data.current_month.month) &&
+            parseInt(this.data.today.year) ===
+                parseInt(this.data.current_month.year)
+        );
     }
 }

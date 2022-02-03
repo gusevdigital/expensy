@@ -24,6 +24,8 @@ import switchMonthView from './views/app/switchMonthView';
 import summaryView from './views/app/summaryView';
 import sideExpenseView from './views/app/sideExpenseView';
 import sideIncomeView from './views/app/sideIncomeView';
+import sideEntriesView from './views/app/sideEntriesView';
+import sideEditEntryView from './views/app/sideEditEntryView';
 import tableIncomeView from './views/app/tableIncomeView';
 import tableExpenseView from './views/app/tableExpenseView';
 
@@ -41,7 +43,7 @@ class Page {
     /*
      * RENDER LOGIN
      */
-    static async renderLoginPage() {
+    static renderLoginPage() {
         // Render header
         headerView.render(model.state);
 
@@ -87,12 +89,11 @@ class Page {
     /*
      * RENDER SETUP
      */
-    static async renderSetupPage() {
+    static renderSetupPage() {
         // Render header
         headerView.render(model.state);
 
         // Render Setup screen
-        console.log('render Setup');
         setupView.makeRootWide(true);
         setupView.render();
 
@@ -106,9 +107,8 @@ class Page {
     /*
      * RENDER APP
      */
-    static async renderAppPage() {
+    static renderAppPage() {
         // Render App screen
-        console.log('render App');
         rootView.render();
         headerView.render(model.state);
 
@@ -119,15 +119,26 @@ class Page {
 
         sideExpenseView.render(model.state);
         sideIncomeView.render(model.state);
+        sideEntriesView.render(model.state);
+        sideEditEntryView.render(model.state);
 
         // App screen handlers
         headerView.addHandlerLogout(App.controlLogout);
         switchMonthView.addHandlerSwitchMonth(App.controlSwitchMonth);
         sideExpenseView.addHandlerForm(App.controlAddExpense);
         sideIncomeView.addHandlerForm(App.controlAddIncome);
+        sideEntriesView.addHandlerDeleteEntry(App.controlDeleteEntry);
+        sideEntriesView.addHandlerShowEditEntry(App.controlShowEditEntry);
+        tableExpenseView.addHandlerShowEntries(App.controlShowEntries);
+        tableIncomeView.addHandlerShowEntries(App.controlShowEntries);
 
         // Activate elements
         App.activateElements();
+    }
+
+    // Helper
+    static setupEditEntrySide() {
+        sideEditEntryView.addHandlerForm(App.controlEditEntry);
     }
 }
 
@@ -137,7 +148,7 @@ class App {
     }
 
     /*
-     * INIT
+     * p
      */
     async init() {
         try {
@@ -188,7 +199,7 @@ class App {
     }
 
     /*
-     * CONTROL LOGIN FORMS
+     * CONTROL LOGIN
      */
     static async processLoginForm(
         data,
@@ -203,7 +214,7 @@ class App {
             const response = await modelHandler(data);
             view.cleanForm();
             view.renderMessage('success', response.message);
-            if (doRefresh) refresh();
+            refresh();
         } catch (err) {
             view.renderMessage('error', err.message);
             if (err.fields) view.fieldsError(err.fields);
@@ -243,6 +254,7 @@ class App {
             summaryView.update(model.state);
             tableExpenseView.update(model.state);
             tableIncomeView.update(model.state);
+            sideEntriesView.closeAll();
         } catch (err) {
             console.log(err);
         } finally {
@@ -288,6 +300,84 @@ class App {
             if (err.fields) sideIncomeView.fieldsError(err.fields);
         } finally {
             sideIncomeView.stopLoading();
+        }
+    }
+
+    /*
+     * CONTROL SHOW ENTRIES
+     */
+    static controlShowEntries(type, cat, day) {
+        model.state = {
+            ...model.state,
+            show_entries: {
+                type,
+                cat,
+                day,
+            },
+        };
+        sideEntriesView.update(model.state);
+        sideEntriesView.open();
+        sideEditEntryView.close();
+    }
+
+    /*
+     * CONTROL DELETE ENTRY
+     */
+    static async controlDeleteEntry(id) {
+        try {
+            sideEntriesView.startLoading();
+            const response = await model.deleteEntry(id);
+            console.log('Response:', response);
+            console.log('state', model.state);
+            sideEntriesView.update(model.state);
+            summaryView.update(model.state);
+            tableExpenseView.update(model.state);
+            tableIncomeView.update(model.state);
+            if (response.closeDay) sideEntriesView.close();
+        } catch (err) {
+            console.log(err);
+        } finally {
+            sideEntriesView.stopLoading();
+        }
+    }
+
+    /*
+     * CONTROL SHOW EDIT ENTRY
+     */
+    static controlShowEditEntry(id) {
+        const edit_entry = Object.values(model.state.entries)
+            .flat()
+            .find(entry => parseInt(entry.id) === parseInt(id));
+        model.state = {
+            ...model.state,
+            edit_entry,
+        };
+        sideEditEntryView.update(model.state);
+        Page.setupEditEntrySide();
+        sideEditEntryView.open();
+    }
+
+    /*
+     * CONTROL EDIT ENTRY
+     */
+    static async controlEditEntry(data) {
+        try {
+            sideEditEntryView.startLoading();
+            const response = await model.editEntry(data);
+
+            sideEditEntryView.update(model.state);
+            Page.setupEditEntrySide();
+            sideEditEntryView.renderMessage('success', response.message);
+            sideEntriesView.update(model.state);
+            summaryView.update(model.state);
+            tableIncomeView.update(model.state);
+            tableExpenseView.update(model.state);
+        } catch (err) {
+            sideEditEntryView.renderMessage('error', err.message);
+            console.log(err);
+            if (err.fields) sideEditEntryView.fieldsError(err.fields);
+        } finally {
+            sideEditEntryView.stopLoading();
         }
     }
 }

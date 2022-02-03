@@ -36,8 +36,8 @@ class SummaryView extends View {
         return `
         <div class="content__section">
             <h4 class="content__section__title">${
-                monthNames[parseInt(this.data.current_date.month) - 1]
-            } ${this.data.current_date.year}</h4>
+                monthNames[parseInt(this.data.current_month.month) - 1]
+            } ${this.data.current_month.year}</h4>
             <ul id="summary" class="summary ${
                 startingText.length > SUM_FONT_SWITCH_CHAR ||
                 incomeText.length > SUM_FONT_SWITCH_CHAR ||

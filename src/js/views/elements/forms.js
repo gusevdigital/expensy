@@ -62,9 +62,9 @@ class Forms {
             <div class="input__group">
             <textarea class="input__field" id="${data.id}-${data.name}" name="${
                 data.name
-            }" ${data.required ? 'required' : ''} ${data.validate ? `validate-${data.validate}` : ''}>${
-                data.value ? data.value : ''
-            }</textarea>
+            }" ${data.required ? 'required' : ''} ${
+                data.validate ? `validate-${data.validate}` : ''
+            }>${data.value ? data.value : ''}</textarea>
             </div>
             </div>
             `;
@@ -112,6 +112,13 @@ class Forms {
                         : ''
                 }
             </div>
+            `;
+        }
+        if (type === 'hidden') {
+            return `
+            <input type="hidden" name="${data.name}" value="${
+                data.value ? data.value : ''
+            }" />
             `;
         }
 

@@ -15,7 +15,7 @@ class TableExpenseView extends TableView {
         const table = this.getTableMarkup();
 
         return `
-        <h4 class="content__section__title">Expense</h4>
+        <h4 class="content__section__title">Expenses</h4>
         ${table}
         `;
     }

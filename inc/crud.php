@@ -122,9 +122,14 @@ function expensy_update_entry($id, $data)
     $entry_user_id = $wpdb->get_var("SELECT user_id FROM $expensy_db_entries WHERE id=$id");
     if (get_current_user_id() !== intval($entry_user_id)) return false;
 
-    $data = sql_process_entry_keys($data);
+    $request = [
+        'entry_date' => date('Y-m-d', strtotime($data['date'])),
+        'entry_amount' => floatval(preg_replace('/[^0-9.]+/', '', strval($data['amount']))),
+        'entry_cat' => intval($data['cat']),
+        'entry_note' => isset($data['note']) && $data['note'] ? substr(trim(esc_html($data['note'])), 0, 200) : ''
+    ];
 
-    $response = $wpdb->update($expensy_db_entries, $data, ['id' => $id]);
+    $response = $wpdb->update($expensy_db_entries, $request, ['id' => $id]);
 
     if (is_wp_error($response) || $response === false) return false;
 

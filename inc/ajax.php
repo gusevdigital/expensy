@@ -6,8 +6,9 @@ require_once(get_theme_file_path('/inc/ajax/logout.php'));
 require_once(get_theme_file_path('/inc/ajax/reset.php'));
 require_once(get_theme_file_path('/inc/ajax/register.php'));
 require_once(get_theme_file_path('/inc/ajax/setup.php'));
-require_once(get_theme_file_path('/inc/ajax/add_expense.php'));
-require_once(get_theme_file_path('/inc/ajax/add_income.php'));
+require_once(get_theme_file_path('/inc/ajax/add_entry.php'));
+require_once(get_theme_file_path('/inc/ajax/delete_entry.php'));
+require_once(get_theme_file_path('/inc/ajax/edit_entry.php'));
 require_once(get_theme_file_path('/inc/ajax/switch_month.php'));
 
 

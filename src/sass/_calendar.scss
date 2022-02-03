@@ -92,6 +92,10 @@ $cal-side-width-mobile: 12rem;
             min-height: 3rem;
             white-space: nowrap;
             border-bottom: $border-width solid $black;
+
+            &.today {
+                background-color: get-color('royal-blue', 'light');
+            }
         }
 
         tr {

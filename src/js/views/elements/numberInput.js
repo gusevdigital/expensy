@@ -12,6 +12,8 @@ class NumberInputElement {
         this.input.addEventListener('input', this._processInput.bind(this));
 
         this.input.addEventListener('blur', this._polishInput.bind(this));
+
+        this.input.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     _polishInput(e) {
@@ -50,10 +52,15 @@ class NumberInputElement {
 }
 
 class NumberInput {
-    activate() {
-        document.querySelectorAll('.input--number input')?.forEach(input => {
-            new NumberInputElement(input);
-        });
+    activate(parent = null) {
+        if (!parent)
+            document
+                .querySelectorAll('.input--number input')
+                ?.forEach(el => new NumberInputElement(el));
+        else
+            parent
+                .querySelectorAll('.input--number input')
+                ?.forEach(el => new NumberInputElement(el));
     }
 }
 

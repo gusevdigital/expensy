@@ -23,7 +23,9 @@ class SideExpenseView extends SideView {
                 </svg>
             </a>
         </div>
+        <div class="side__title-wrap">
         <h2 class="side__title">Expense</h2>
+        </div>
         `;
     }
 

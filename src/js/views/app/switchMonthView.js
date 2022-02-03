@@ -13,13 +13,13 @@ class SwitchMonthView extends View {
     markup() {
         const prevMonth = getPrevNextMonth(
             'prev',
-            this.data.current_date.month,
-            this.data.current_date.year
+            this.data.current_month.month,
+            this.data.current_month.year
         );
         const nextMonth = getPrevNextMonth(
             'next',
-            this.data.current_date.month,
-            this.data.current_date.year
+            this.data.current_month.month,
+            this.data.current_month.year
         );
 
         return `
