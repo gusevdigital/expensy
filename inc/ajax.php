@@ -10,6 +10,8 @@ require_once(get_theme_file_path('/inc/ajax/add_entry.php'));
 require_once(get_theme_file_path('/inc/ajax/delete_entry.php'));
 require_once(get_theme_file_path('/inc/ajax/edit_entry.php'));
 require_once(get_theme_file_path('/inc/ajax/switch_month.php'));
+require_once(get_theme_file_path('/inc/ajax/add_cat.php'));
+require_once(get_theme_file_path('/inc/ajax/delete_cat.php'));
 
 
 add_action('wp_ajax_nopriv_return_world', 'getCrud');

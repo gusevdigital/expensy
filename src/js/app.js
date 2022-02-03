@@ -26,8 +26,12 @@ import sideExpenseView from './views/app/sideExpenseView';
 import sideIncomeView from './views/app/sideIncomeView';
 import sideEntriesView from './views/app/sideEntriesView';
 import sideEditEntryView from './views/app/sideEditEntryView';
+import SideCatsView from './views/app/sideCatsView';
+import sideSettingsView from './views/app/sideSettingsView';
 import tableIncomeView from './views/app/tableIncomeView';
 import tableExpenseView from './views/app/tableExpenseView';
+const sideIncomeCatsView = new SideCatsView('inc');
+const sideExpenseCatsView = new SideCatsView('exp');
 
 // Setup page
 import setupView from './views/setup/setupView';
@@ -121,16 +125,23 @@ class Page {
         sideIncomeView.render(model.state);
         sideEntriesView.render(model.state);
         sideEditEntryView.render(model.state);
+        sideIncomeCatsView.render(model.state);
+        sideExpenseCatsView.render(model.state);
+        sideSettingsView.render(model.state);
 
         // App screen handlers
         headerView.addHandlerLogout(App.controlLogout);
         switchMonthView.addHandlerSwitchMonth(App.controlSwitchMonth);
-        sideExpenseView.addHandlerForm(App.controlAddExpense);
-        sideIncomeView.addHandlerForm(App.controlAddIncome);
         sideEntriesView.addHandlerDeleteEntry(App.controlDeleteEntry);
         sideEntriesView.addHandlerShowEditEntry(App.controlShowEditEntry);
+
         tableExpenseView.addHandlerShowEntries(App.controlShowEntries);
         tableIncomeView.addHandlerShowEntries(App.controlShowEntries);
+        // Dynamic sides
+        this.setupIncomeSide();
+        this.setupExpenseSide();
+        this.setupExpenseCatsSide();
+        this.setupIncomeCatsSide();
 
         // Activate elements
         App.activateElements();
@@ -139,6 +150,24 @@ class Page {
     // Helper
     static setupEditEntrySide() {
         sideEditEntryView.addHandlerForm(App.controlEditEntry);
+    }
+
+    static setupIncomeSide() {
+        sideIncomeView.addHandlerForm(App.controlAddIncome);
+    }
+
+    static setupExpenseSide() {
+        sideExpenseView.addHandlerForm(App.controlAddExpense);
+    }
+
+    static setupExpenseCatsSide() {
+        sideExpenseCatsView.addHandlerForm(App.controlAddExpenseCat);
+        sideExpenseCatsView.addHandlerDeleteCat(App.controlDeleteCat);
+    }
+
+    static setupIncomeCatsSide() {
+        sideIncomeCatsView.addHandlerForm(App.controlAddIncomeCat);
+        sideIncomeCatsView.addHandlerDeleteCat(App.controlDeleteCat);
     }
 }
 
@@ -294,6 +323,7 @@ class App {
             sideIncomeView.renderMessage('success', response.message);
             summaryView.update(model.state);
             tableIncomeView.update(model.state);
+            console.log(model.state);
         } catch (err) {
             sideIncomeView.renderMessage('error', err.message);
             console.log(err);
@@ -327,8 +357,6 @@ class App {
         try {
             sideEntriesView.startLoading();
             const response = await model.deleteEntry(id);
-            console.log('Response:', response);
-            console.log('state', model.state);
             sideEntriesView.update(model.state);
             summaryView.update(model.state);
             tableExpenseView.update(model.state);
@@ -378,6 +406,68 @@ class App {
             if (err.fields) sideEditEntryView.fieldsError(err.fields);
         } finally {
             sideEditEntryView.stopLoading();
+        }
+    }
+
+    /*
+     * CONTROL ADD INCOME CAT
+     */
+    static async controlAddIncomeCat(data) {
+        try {
+            sideIncomeCatsView.startLoading();
+            const response = await model.addCat(data);
+            sideIncomeCatsView.update(model.state);
+            tableIncomeView.update(model.state);
+            sideIncomeView.update(model.state);
+            Page.setupIncomeSide();
+            Page.setupIncomeCatsSide();
+        } catch (err) {
+            sideIncomeCatsView.renderMessage('error', err.message);
+            console.log(err);
+            if (err.fields) sideIncomeCatsView.fieldsError(err.fields);
+        } finally {
+            sideIncomeCatsView.stopLoading();
+        }
+    }
+
+    /*
+     * CONTROL ADD EXPENSE CAT
+     */
+    static async controlAddExpenseCat(data) {
+        try {
+            sideExpenseCatsView.startLoading();
+            const response = await model.addCat(data);
+            sideExpenseCatsView.update(model.state);
+            tableExpenseView.update(model.state);
+            sideExpenseView.update(model.state);
+            Page.setupExpenseSide();
+            Page.setupExpenseCatsSide();
+        } catch (err) {
+            sideExpenseCatsView.renderMessage('error', err.message);
+            console.log(err);
+            if (err.fields) sideExpenseCatsView.fieldsError(err.fields);
+        } finally {
+            sideExpenseCatsView.stopLoading();
+        }
+    }
+
+    /*
+     * CONTROL DELETE CAT
+     */
+    static async controlDeleteCat(id, type) {
+        const view = type === 'inc' ? sideIncomeCatsView : sideExpenseCatsView;
+        const tableView = type === 'inc' ? tableIncomeView : tableExpenseView;
+        try {
+            view.startLoading();
+            const response = await model.deleteCat(id);
+            view.update(model.state);
+            tableView.update(model.state);
+            if (type === 'inc') Page.setupIncomeCatsSide();
+            else Page.setupExpenseCatsSide();
+        } catch (err) {
+            console.log(err);
+        } finally {
+            view.stopLoading();
         }
     }
 }

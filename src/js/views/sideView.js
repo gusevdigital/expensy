@@ -3,6 +3,7 @@ import { childOf } from '../helpers';
 import popup from './elements/popup';
 import forms from './elements/forms';
 import select from './elements/select';
+import side from './elements/side';
 import numberInput from './elements/numberInput';
 
 export default class SideView extends View {
@@ -115,6 +116,7 @@ export default class SideView extends View {
         popup.activate(curBodyElement);
         select.activate(curBodyElement);
         numberInput.activate(curBodyElement);
+        side.activate(curBodyElement);
 
         if (this.form) {
             forms.setEvents(this.form);

@@ -58,7 +58,7 @@
     $color: map.get($helper-colors, $name);
 
     @if ($type=='light') {
-        @return lighten($color, 33%);
+        @return lighten($color, 30%);
     }
 
     @else {

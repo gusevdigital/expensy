@@ -6,3 +6,17 @@ export const CURRENCIES = ['usd', 'eur', 'rub'];
 export const LOCALES = ['en', 'en', 'ru'];
 export const CAT_TRUNCATE_LENGTH = 16;
 export const SUM_FONT_SWITCH_CHAR = 10;
+export const COLORS = {
+    dingley: 'Dingley',
+    olivine: 'Olivine',
+    sunglow: 'Sunglow',
+    lavender: 'Lavender',
+    carrot: 'Carrot',
+    tree: 'Tree',
+    cinnabar: 'Cinnabar',
+    blue_ribbon: 'Blue ribbon',
+    malibu: 'Malibu',
+    deluge: 'Deluge',
+    royal_blue: 'Royal blue',
+    shark: 'Shark',
+};

@@ -60,6 +60,7 @@ class Model {
         try {
             const response = await AJAX('setup', data);
             if (response.status) {
+                this.state.starting_budget = data.starting_budget;
                 this.state.account.currency = data.currency;
                 return response;
             } else {
@@ -174,6 +175,36 @@ class Model {
         }
     }
 
+    async addCat(data) {
+        try {
+            const response = await AJAX('add_cat', data);
+            if (response.status) {
+                this._addCat(response.id, data);
+                return response;
+            } else {
+                throw response.message;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async deleteCat(id) {
+        try {
+            const response = await AJAX('delete_cat', {
+                id,
+            });
+            if (response.status && response.state) {
+                this.state = response.state;
+                return response;
+            } else {
+                throw response.message;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
     _stateAddEntry(response, data, type) {
         const entryDate = new Date(data.date);
         if (
@@ -274,6 +305,18 @@ class Model {
             date: data.date,
             note: data.note,
         };
+    }
+
+    _addCat(id, data) {
+        this.state.cats = [
+            ...this.state.cats,
+            {
+                id: String(id),
+                name: data.name,
+                type: data.type,
+                color: data.color,
+            },
+        ];
     }
 }
 

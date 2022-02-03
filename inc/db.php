@@ -11,7 +11,7 @@ function expensy_setup_db()
     // Entries
     $entries_sql = "CREATE TABLE $expensy_db_entries (
         id INTEGER NOT NULL AUTO_INCREMENT,
-        user INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         entry_date DATETIME NOT NULL,
         entry_type VARCHAR(3) NOT NULL,
@@ -26,11 +26,13 @@ function expensy_setup_db()
     // Entry categories
     $entries_sql = "CREATE TABLE $expensy_db_entry_cats (
         cat_id INTEGER NOT NULL AUTO_INCREMENT,
-        user INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         cat_type VARCHAR(3) NOT NULL,
         cat_name VARCHAR(20),
         cat_color varchar(20),
+        cat_order INTEGER NOT NULL,
+        cat_fixed INTEGER DEFAULT 0,
         UNIQUE KEY cat_id (cat_id)
     ) $charset_collate;";
 

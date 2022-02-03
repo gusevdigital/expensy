@@ -25,8 +25,9 @@ require_once(get_theme_file_path('/inc/init.php'));
 // ------------------------------
 
 // Redirect from login page to the main app
-add_action('init','expensy_login_page');
-function expensy_login_page(){
+add_action('init', 'expensy_login_page');
+function expensy_login_page()
+{
     global $pagenow;
     if ('wp-login.php' == $pagenow && (!isset($_GET['action'])) || (isset($_GET['action']) && !$_GET['action'] === 'rp')) {
         wp_redirect(site_url('/'));
@@ -35,14 +36,15 @@ function expensy_login_page(){
 }
 
 // Redirect everyone expect admin from wp-admin
-function my_login_redirect($url, $request, $user) {
-	if ($user && is_object($user) && is_a($user, 'WP_User')) {
-		$url = $user->has_cap('administrator') ? admin_url() : site_url('/');
-	}
-	return $url;
+function my_login_redirect($url, $request, $user)
+{
+    if ($user && is_object($user) && is_a($user, 'WP_User')) {
+        $url = $user->has_cap('administrator') ? admin_url() : site_url('/');
+    }
+    return $url;
 }
 
-add_filter('login_redirect', 'my_login_redirect', 10, 3 );
+add_filter('login_redirect', 'my_login_redirect', 10, 3);
 
 // Show admin bar only for admins
 if (!current_user_can('manage_options')) {

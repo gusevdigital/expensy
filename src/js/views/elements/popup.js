@@ -13,6 +13,7 @@ class PopupElement {
     }
 
     _processShow(e) {
+        e.preventDefault();
         this.show();
     }
 

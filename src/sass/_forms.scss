@@ -96,7 +96,8 @@
         border: $border-width solid $black;
         border-radius: $radius-small;
         top: calc(100% + 1px);
-        overflow: hidden;
+        max-height: 13rem;
+        overflow: auto;
         left: 0;
         right: 0;
         z-index: 99;
@@ -142,7 +143,7 @@
 
         &:hover,
         &.selected {
-            background-color: get-color('royal-blue', 'light');
+            background-color: get-color('royal_blue', 'light');
         }
     }
 }

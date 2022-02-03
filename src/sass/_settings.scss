@@ -76,44 +76,20 @@ $gray: #C7C7C7;
 $gray-light: #FAF8FF;
 
 // Helper colors
-$helper-colors: (shark: #222223,
-    royal-blue: $primary,
+$helper-colors: (shark: #646465,
+    royal_blue: $primary,
     deluge: #896BA7,
-    malibu: #90C8FC,
-    blue-ribbon: #2466FF,
+    malibu: #73a0ca,
+    blue_ribbon: #2466FF,
     cinnabar: #E34234,
     tree: #AC7563,
     carrot: #F38A21,
-    lavender: #FAB8C4,
+    lavender: #af8189,
     sunglow: #FCCF2F,
     olivine: #95C675,
     dingley: #597746,
 );
 
-$shark: #222223;
-$royal-blue: $primary;
-$deluge: #896BA7;
-$malibu: #90C8FC;
-$blue-ribbon: #2466FF;
-$cinnabar: #E34234;
-$tree: #AC7563;
-$carrot: #F38A21;
-$lavender: #FAB8C4;
-$sunglow: #FCCF2F;
-$olivine: #95C675;
-$dingley: #597746;
-$shark-light: lighten($shark, 80%);
-$royal-blue-light: lighten($royal-blue, 80%);
-$deluge-light: lighten($deluge, 80%);
-$malibu-light: lighten($malibu, 80%);
-$blue-ribbon-light: lighten($blue-ribbon, 80%);
-$cinnabar-light: lighten($cinnabar, 80%);
-$tree-light: lighten($tree, 80%);
-$carrot-light: lighten($carrot, 80%);
-$lavender-light: lighten($lavender, 80%);
-$sunglow-light: lighten($sunglow, 80%);
-$olivine-light: lighten($olivine, 80%);
-$dingley-light: lighten($dingley, 80%);
 
 /*
 * BOX SHADOWS

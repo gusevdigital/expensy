@@ -1,6 +1,7 @@
 .side__inner,
 .content__inner,
-.scroll {
+.scroll,
+.custom-select__options {
     overflow: auto;
 
     &::-webkit-scrollbar {
@@ -10,7 +11,7 @@
     }
 
     &::-webkit-scrollbar-track {
-        background: get-color('royal-blue', 'light');
+        background: get-color('royal_blue', 'light');
         border-radius: $scrollbar-width;
     }
 

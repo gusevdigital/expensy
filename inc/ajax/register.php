@@ -56,6 +56,21 @@ function expensy_ajax_register()
                 // Set current user and cookie
                 wp_set_current_user($user_logged->ID);
                 wp_set_auth_cookie($user_logged->ID);
+
+                // Set fixed cats
+                $cat_id = expensy_create_cat([
+                    'type' => 'inc',
+                    'name' => 'Other',
+                    'color' => 'dingley',
+                    'fixed' => 1
+                ]);
+                $cat_id = expensy_create_cat([
+                    'type' => 'exp',
+                    'name' => 'General',
+                    'color' => 'shark',
+                    'fixed' => 1
+                ]);
+
                 // Return success
                 wp_die(json_encode([
                     'status' => 1,

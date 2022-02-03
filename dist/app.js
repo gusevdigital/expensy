@@ -554,6 +554,10 @@ var _sideEntriesView = require("./views/app/sideEntriesView");
 var _sideEntriesViewDefault = parcelHelpers.interopDefault(_sideEntriesView);
 var _sideEditEntryView = require("./views/app/sideEditEntryView");
 var _sideEditEntryViewDefault = parcelHelpers.interopDefault(_sideEditEntryView);
+var _sideCatsView = require("./views/app/sideCatsView");
+var _sideCatsViewDefault = parcelHelpers.interopDefault(_sideCatsView);
+var _sideSettingsView = require("./views/app/sideSettingsView");
+var _sideSettingsViewDefault = parcelHelpers.interopDefault(_sideSettingsView);
 var _tableIncomeView = require("./views/app/tableIncomeView");
 var _tableIncomeViewDefault = parcelHelpers.interopDefault(_tableIncomeView);
 var _tableExpenseView = require("./views/app/tableExpenseView");
@@ -573,6 +577,8 @@ var _numberInputDefault = parcelHelpers.interopDefault(_numberInput);
 var _tableDrag = require("./views/elements/tableDrag");
 var _tableDragDefault = parcelHelpers.interopDefault(_tableDrag);
 if (module.hot) module.hot.accept();
+const sideIncomeCatsView = new _sideCatsViewDefault.default('inc');
+const sideExpenseCatsView = new _sideCatsViewDefault.default('exp');
 class Page {
     /*
      * RENDER LOGIN
@@ -621,21 +627,41 @@ class Page {
         _sideIncomeViewDefault.default.render(_modelDefault.default.state);
         _sideEntriesViewDefault.default.render(_modelDefault.default.state);
         _sideEditEntryViewDefault.default.render(_modelDefault.default.state);
+        sideIncomeCatsView.render(_modelDefault.default.state);
+        sideExpenseCatsView.render(_modelDefault.default.state);
+        _sideSettingsViewDefault.default.render(_modelDefault.default.state);
         // App screen handlers
         _headerViewDefault.default.addHandlerLogout(App.controlLogout);
         _switchMonthViewDefault.default.addHandlerSwitchMonth(App.controlSwitchMonth);
-        _sideExpenseViewDefault.default.addHandlerForm(App.controlAddExpense);
-        _sideIncomeViewDefault.default.addHandlerForm(App.controlAddIncome);
         _sideEntriesViewDefault.default.addHandlerDeleteEntry(App.controlDeleteEntry);
         _sideEntriesViewDefault.default.addHandlerShowEditEntry(App.controlShowEditEntry);
         _tableExpenseViewDefault.default.addHandlerShowEntries(App.controlShowEntries);
         _tableIncomeViewDefault.default.addHandlerShowEntries(App.controlShowEntries);
+        // Dynamic sides
+        this.setupIncomeSide();
+        this.setupExpenseSide();
+        this.setupExpenseCatsSide();
+        this.setupIncomeCatsSide();
         // Activate elements
         App.activateElements();
     }
     // Helper
     static setupEditEntrySide() {
         _sideEditEntryViewDefault.default.addHandlerForm(App.controlEditEntry);
+    }
+    static setupIncomeSide() {
+        _sideIncomeViewDefault.default.addHandlerForm(App.controlAddIncome);
+    }
+    static setupExpenseSide() {
+        _sideExpenseViewDefault.default.addHandlerForm(App.controlAddExpense);
+    }
+    static setupExpenseCatsSide() {
+        sideExpenseCatsView.addHandlerForm(App.controlAddExpenseCat);
+        sideExpenseCatsView.addHandlerDeleteCat(App.controlDeleteCat);
+    }
+    static setupIncomeCatsSide() {
+        sideIncomeCatsView.addHandlerForm(App.controlAddIncomeCat);
+        sideIncomeCatsView.addHandlerDeleteCat(App.controlDeleteCat);
     }
 }
 class App {
@@ -762,6 +788,7 @@ class App {
             _sideIncomeViewDefault.default.renderMessage('success', response.message);
             _summaryViewDefault.default.update(_modelDefault.default.state);
             _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+            console.log(_modelDefault.default.state);
         } catch (err) {
             _sideIncomeViewDefault.default.renderMessage('error', err.message);
             console.log(err);
@@ -791,8 +818,6 @@ class App {
         try {
             _sideEntriesViewDefault.default.startLoading();
             const response = await _modelDefault.default.deleteEntry(id);
-            console.log('Response:', response);
-            console.log('state', _modelDefault.default.state);
             _sideEntriesViewDefault.default.update(_modelDefault.default.state);
             _summaryViewDefault.default.update(_modelDefault.default.state);
             _tableExpenseViewDefault.default.update(_modelDefault.default.state);
@@ -838,10 +863,66 @@ class App {
             _sideEditEntryViewDefault.default.stopLoading();
         }
     }
+    /*
+     * CONTROL ADD INCOME CAT
+     */ static async controlAddIncomeCat(data) {
+        try {
+            sideIncomeCatsView.startLoading();
+            const response = await _modelDefault.default.addCat(data);
+            sideIncomeCatsView.update(_modelDefault.default.state);
+            _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+            _sideIncomeViewDefault.default.update(_modelDefault.default.state);
+            Page.setupIncomeSide();
+            Page.setupIncomeCatsSide();
+        } catch (err) {
+            sideIncomeCatsView.renderMessage('error', err.message);
+            console.log(err);
+            if (err.fields) sideIncomeCatsView.fieldsError(err.fields);
+        } finally{
+            sideIncomeCatsView.stopLoading();
+        }
+    }
+    /*
+     * CONTROL ADD EXPENSE CAT
+     */ static async controlAddExpenseCat(data) {
+        try {
+            sideExpenseCatsView.startLoading();
+            const response = await _modelDefault.default.addCat(data);
+            sideExpenseCatsView.update(_modelDefault.default.state);
+            _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+            _sideExpenseViewDefault.default.update(_modelDefault.default.state);
+            Page.setupExpenseSide();
+            Page.setupExpenseCatsSide();
+        } catch (err) {
+            sideExpenseCatsView.renderMessage('error', err.message);
+            console.log(err);
+            if (err.fields) sideExpenseCatsView.fieldsError(err.fields);
+        } finally{
+            sideExpenseCatsView.stopLoading();
+        }
+    }
+    /*
+     * CONTROL DELETE CAT
+     */ static async controlDeleteCat(id, type) {
+        const view = type === 'inc' ? sideIncomeCatsView : sideExpenseCatsView;
+        const tableView = type === 'inc' ? _tableIncomeViewDefault.default : _tableExpenseViewDefault.default;
+        try {
+            view.startLoading();
+            const response = await _modelDefault.default.deleteCat(id);
+            view.update(_modelDefault.default.state);
+            tableView.update(_modelDefault.default.state);
+            if (type === 'inc') Page.setupIncomeCatsSide();
+            else Page.setupExpenseCatsSide();
+        } catch (err) {
+            console.log(err);
+        } finally{
+            view.stopLoading();
+        }
+    }
 }
 const app = new App();
 
-},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/switchMonthView":"bvQyF","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/app/sideEntriesView":"7GwJs","./views/app/sideEditEntryView":"5C9dy","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","./views/elements/tableDrag":"1kCnj","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"95FYz":[function(require,module,exports) {
+},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/switchMonthView":"bvQyF","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/app/sideEntriesView":"7GwJs","./views/app/sideEditEntryView":"5C9dy","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","./views/elements/tableDrag":"1kCnj","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./views/app/sideCatsView":"cOysY","./views/app/sideSettingsView":"9j92C"}],"95FYz":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');
@@ -15174,6 +15255,8 @@ parcelHelpers.export(exports, "CAT_TRUNCATE_LENGTH", ()=>CAT_TRUNCATE_LENGTH
 );
 parcelHelpers.export(exports, "SUM_FONT_SWITCH_CHAR", ()=>SUM_FONT_SWITCH_CHAR
 );
+parcelHelpers.export(exports, "COLORS", ()=>COLORS
+);
 const TIMEOUT_SECONDS = 15;
 const REFRESH_DELAY = 1000;
 const CLEAN_NOTICE_DELAY = 4000;
@@ -15190,6 +15273,20 @@ const LOCALES = [
 ];
 const CAT_TRUNCATE_LENGTH = 16;
 const SUM_FONT_SWITCH_CHAR = 10;
+const COLORS = {
+    dingley: 'Dingley',
+    olivine: 'Olivine',
+    sunglow: 'Sunglow',
+    lavender: 'Lavender',
+    carrot: 'Carrot',
+    tree: 'Tree',
+    cinnabar: 'Cinnabar',
+    blue_ribbon: 'Blue ribbon',
+    malibu: 'Malibu',
+    deluge: 'Deluge',
+    royal_blue: 'Royal blue',
+    shark: 'Shark'
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"ciiiV":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -15418,6 +15515,7 @@ class Model {
         try {
             const response = await _helpers.AJAX('setup', data);
             if (response.status) {
+                this.state.starting_budget = data.starting_budget;
                 this.state.account.currency = data.currency;
                 return response;
             } else throw response.message;
@@ -15500,6 +15598,30 @@ class Model {
             throw err;
         }
     }
+    async addCat(data) {
+        try {
+            const response = await _helpers.AJAX('add_cat', data);
+            if (response.status) {
+                this._addCat(response.id, data);
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async deleteCat(id) {
+        try {
+            const response = await _helpers.AJAX('delete_cat', {
+                id
+            });
+            if (response.status && response.state) {
+                this.state = response.state;
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
     _stateAddEntry(response, data, type) {
         const entryDate = new Date(data.date);
         if (entryDate.getFullYear() < parseInt(this.state.current_month.year) || entryDate.getMonth() + 1 < parseInt(this.state.current_month.month)) {
@@ -15569,6 +15691,17 @@ class Model {
             date: data.date,
             note: data.note
         };
+    }
+    _addCat(id, data) {
+        this.state.cats = [
+            ...this.state.cats,
+            {
+                id: String(id),
+                name: data.name,
+                type: data.type,
+                color: data.color
+            }, 
+        ];
     }
 }
 exports.default = new Model();
@@ -15796,7 +15929,7 @@ class HeaderView extends _viewDefault.default {
                         </svg>
                     </span>
                     <span id="user__name" class="nav-item__title show-for-large">
-                        Denis Gusev
+                        ${this.data.account.name}
                     </span>
                 </div>
                 <ul class="nav-item__dropdown">
@@ -25018,6 +25151,8 @@ var _forms = require("./elements/forms");
 var _formsDefault = parcelHelpers.interopDefault(_forms);
 var _select = require("./elements/select");
 var _selectDefault = parcelHelpers.interopDefault(_select);
+var _side = require("./elements/side");
+var _sideDefault = parcelHelpers.interopDefault(_side);
 var _numberInput = require("./elements/numberInput");
 var _numberInputDefault = parcelHelpers.interopDefault(_numberInput);
 class SideView extends _viewDefault.default {
@@ -25094,12 +25229,13 @@ class SideView extends _viewDefault.default {
         _popupDefault.default.activate(curBodyElement);
         _selectDefault.default.activate(curBodyElement);
         _numberInputDefault.default.activate(curBodyElement);
+        _sideDefault.default.activate(curBodyElement);
         if (this.form) _formsDefault.default.setEvents(this.form);
     }
 }
 exports.default = SideView;
 
-},{"./View":"9dvKv","../helpers":"9RX9R","./elements/popup":"9OSuq","./elements/forms":"4tFue","./elements/select":"hvZUh","./elements/numberInput":"8iPnT","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"9OSuq":[function(require,module,exports) {
+},{"./View":"9dvKv","../helpers":"9RX9R","./elements/popup":"9OSuq","./elements/forms":"4tFue","./elements/select":"hvZUh","./elements/numberInput":"8iPnT","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./elements/side":"7yLQt"}],"9OSuq":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _helpers = require("../../helpers");
@@ -25114,6 +25250,7 @@ class PopupElement {
         document.addEventListener('click', this._processHide.bind(this));
     }
     _processShow(e) {
+        e.preventDefault();
         this.show();
     }
     _processHide(e) {
@@ -25363,6 +25500,38 @@ class NumberInput {
 }
 exports.default = new NumberInput();
 
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"7yLQt":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class Side {
+    activate(parent = null) {
+        const target = parent ?? document;
+        target.querySelectorAll('[data-side-open]').forEach((el1)=>{
+            el1.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.sideOpen;
+                const targetEl = document.querySelector(`#${targetId}`);
+                if (!targetEl) return;
+                document.querySelectorAll('.side').forEach((el)=>el.style.zIndex = 'auto'
+                );
+                targetEl.style.zIndex = '9';
+                targetEl.classList.add('active');
+            });
+        });
+        target.querySelectorAll('[data-side-close]').forEach((el)=>{
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.dataset.sideClose;
+                const targetEl = document.querySelector(`#${targetId}`);
+                if (!targetEl) return;
+                targetEl.style.zIndex = 'auto';
+                targetEl.classList.remove('active');
+            });
+        });
+    }
+}
+exports.default = new Side();
+
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"kpUTc":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -25588,8 +25757,8 @@ class SideExpenseView extends _sideViewDefault.default {
     }
     markup() {
         this.form = _formsDefault.default.form(this.id);
-        const cats = this.data.cats.filter((cat)=>cat.type === 'exp'
-        );
+        const cats = this.data.cats ? this.data.cats.filter((cat)=>cat.type === 'exp'
+        ) : [];
         const markup = `
         ${_formsDefault.default.field('date', {
             id: this.id,
@@ -25619,7 +25788,7 @@ class SideExpenseView extends _sideViewDefault.default {
             }),
             btn: {
                 title: 'Manage categories',
-                open: 'expenses_cats'
+                open: 'exp-cats'
             },
             required: true
         })}
@@ -25667,8 +25836,8 @@ class SideIncomeView extends _sideViewDefault.default {
     }
     markup() {
         this.form = _formsDefault.default.form(this.id);
-        const cats = this.data.cats.filter((cat)=>cat.type === 'inc'
-        );
+        const cats = this.data.cats ? this.data.cats.filter((cat)=>cat.type === 'inc'
+        ) : [];
         const markup = `
         ${_formsDefault.default.field('date', {
             id: this.id,
@@ -25698,7 +25867,7 @@ class SideIncomeView extends _sideViewDefault.default {
             }),
             btn: {
                 title: 'Manage categories',
-                open: 'expenses_cats'
+                open: 'inc-cats'
             }
         })}
         ${_formsDefault.default.field('textarea', {
@@ -25775,17 +25944,17 @@ class SideEntriesView extends _sideViewDefault.default {
             </div>
             <div class="entry__actions__item">
                 <div class="popup btn-link">
-                Delete
-                <div class="popup__content">
-                    <div class="question">
-                    <div class="question__text">Are you sure?</div>
-                    <button
-                        class="btn-small btn-small--cinnabar btn--delete"
-                    >
-                        Delete
-                    </button>
+                    Delete
+                    <div class="popup__content popup__content--left">
+                        <div class="question">
+                        <div class="question__text">Are you sure?</div>
+                        <button
+                            class="btn-small btn-small--cinnabar btn--delete"
+                        >
+                            Delete
+                        </button>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
             </div>
@@ -25951,8 +26120,8 @@ class TableView extends _viewDefault.default {
         super();
     }
     getTableMarkup() {
-        const cats = this.data.cats.filter((cat)=>cat.type === this.type
-        );
+        const cats = this.data.cats ? this.data.cats.filter((cat)=>cat.type === this.type
+        ) : [];
         const numberDays = new Date(this.data.current_month.year, this.data.current_month.month, 0).getDate();
         const currentYear = this.data.current_month.year;
         const currentMonth = this.data.current_month.month;
@@ -26137,37 +26306,6 @@ class FeaturedBlock {
 }
 exports.default = new FeaturedBlock();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"7yLQt":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-class Side {
-    activate() {
-        document.querySelectorAll('[data-side-open]').forEach((el1)=>{
-            el1.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.dataset.sideOpen;
-                const targetEl = document.querySelector(`#${targetId}`);
-                if (!targetEl) return;
-                document.querySelectorAll('.side').forEach((el)=>el.style.zIndex = 'auto'
-                );
-                targetEl.style.zIndex = '9';
-                targetEl.classList.add('active');
-            });
-        });
-        document.querySelectorAll('[data-side-close]').forEach((el)=>{
-            el.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.dataset.sideClose;
-                const targetEl = document.querySelector(`#${targetId}`);
-                if (!targetEl) return;
-                targetEl.style.zIndex = 'auto';
-                targetEl.classList.remove('active');
-            });
-        });
-    }
-}
-exports.default = new Side();
-
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"fxINA":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -26250,6 +26388,228 @@ class TableDrag {
 }
 exports.default = new TableDrag();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"cOysY":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+var _popup = require("../elements/popup");
+var _popupDefault = parcelHelpers.interopDefault(_popup);
+var _config = require("../../config");
+class SideCatsView extends _sideViewDefault.default {
+    constructor(type){
+        super();
+        this.type = type;
+        this.id = `${this.type}-cats`;
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}">
+                <svg height="21" width="21">
+                    <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
+                </svg>
+            </a>
+        </div>
+        <div class="side__title-wrap">
+            <div class="side__subtitle text-${this.type === 'exp' ? 'cinnabar' : 'dingley'}">${this.type === 'exp' ? 'Expense' : 'Income'}</div>
+            <h2 class="side__title">Categories</h2>
+        </div>
+        `;
+    }
+    markup() {
+        const markup = document.createElement('div');
+        markup.classList.add('cats');
+        this.form = _formsDefault.default.form(this.id);
+        const cats = this.data.cats ? this.data.cats.filter((cat)=>cat.type === this.type
+        ) : [];
+        const formMarkup = `
+        ${_formsDefault.default.field('select', {
+            id: this.id,
+            name: 'color',
+            label: 'Color',
+            options: Object.entries(_config.COLORS).map((color, i)=>{
+                return {
+                    value: color[0],
+                    content: `<div class="cat"><span class="cat-icon bg-${color[0]}"></span>${color[1]}</div>`,
+                    selected: i === 0
+                };
+            }),
+            required: true
+        })}
+        ${_formsDefault.default.field('text', {
+            id: this.id,
+            name: 'name',
+            label: 'Name',
+            required: true
+        })}
+        ${_formsDefault.default.field('hidden', {
+            id: this.id,
+            name: 'type',
+            value: this.type
+        })}
+        ${_formsDefault.default.submit('Add category')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', formMarkup);
+        _formsDefault.default.setEvents(this.form);
+        const catsMarkup = `
+        <h3 class="side__heading">Current list</h3>
+        <ul class="cat-list">
+        ${cats.map((cat)=>`
+        <li class="cat-list__item" data-id="${cat.id}">
+            <span class="cat-list__item__move">
+            <a href="#" class="cat-list__item--up">
+                <svg height="21" width="21">
+                <use xlink:href="${_iconsSvgDefault.default}#icon-up"></use>
+                </svg>
+            </a>
+            <a href="#" class="cat-list__item--down">
+                <svg height="21" width="21">
+                <use xlink:href="${_iconsSvgDefault.default}#icon-down"></use>
+                </svg>
+            </a>
+            </span>
+            <div class="cat">
+            <span class="cat-icon bg-${cat.color}"></span>${cat.name}
+            </div>
+            ${!Number.parseInt(cat.fixed) ? `
+                    <a href="#" class="popup">
+                        <svg height="14" width="14">
+                            <use xlink:href="${_iconsSvgDefault.default}#icon-close-small"></use>
+                        </svg>
+                        <div class="popup__content popup__content--right">
+                            <div class="question">
+                            <div class="question__text">Are you sure?</div>
+                            <button
+                                class="btn-small btn-small--cinnabar cat-list__item--delete"
+                            >
+                                Delete
+                            </button>
+                            </div>
+                        </div>
+                    </a>
+
+                   
+                    ` : ''}
+            
+        </li>
+        `
+        ).join('')}
+        </ul>
+        `;
+        markup.insertAdjacentElement('beforeend', this.form);
+        markup.insertAdjacentHTML('beforeend', catsMarkup);
+        _popupDefault.default.activate(markup);
+        return markup;
+    }
+    addHandlerDeleteCat(handler) {
+        this.targetElement.addEventListener('click', (e)=>{
+            const deleteBtn = e.target.closest('.cat-list__item--delete');
+            if (!deleteBtn) return;
+            const id = deleteBtn.closest('li.cat-list__item').dataset.id;
+            handler(id, this.type);
+        });
+    }
+}
+exports.default = SideCatsView;
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","../../config":"6V52N","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","../elements/popup":"9OSuq"}],"9j92C":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+class SideSettingsView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'settings';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}">
+              <svg height="21" width="21">
+                <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
+              </svg>
+            </a>
+          </div>
+          <div class="side__title-wrap">
+             <h2 class="side__title">Settings</h2>
+          </div>
+        `;
+    }
+    markup() {
+        this.form = _formsDefault.default.form(this.id);
+        const markup = `
+        ${_formsDefault.default.field('text', {
+            id: this.id,
+            name: 'name',
+            label: 'Name',
+            required: true,
+            value: this.data.account.name
+        })}
+        <div class="input input--disabled">
+            <label>Email</label>
+            <div>${this.data.account.email}</div>
+        </div>
+        ${_formsDefault.default.field('password', {
+            id: this.id,
+            name: 'new_password',
+            label: 'New password',
+            autocomplete: 'new-password',
+            required: true
+        })}
+        ${_formsDefault.default.field('password', {
+            id: this.id,
+            name: 'confirm_new_password',
+            label: 'Confirm new password',
+            autocomplete: 'new-password',
+            required: true
+        })}
+        ${_formsDefault.default.field('select', {
+            id: this.id,
+            name: 'currency',
+            label: 'Currency',
+            options: [
+                {
+                    value: 'usd',
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg><span>Dollar</span>`,
+                    selected: this.data.account.currency === 'usd'
+                },
+                {
+                    value: 'eur',
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-euro"></use></svg><span>Euro</span>`,
+                    selected: this.data.account.currency === 'eur'
+                },
+                {
+                    value: 'rub',
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-ruble"></use></svg><span>Ruble</span>`,
+                    selected: this.data.account.currency === 'rub'
+                }, 
+            ]
+        })}
+        ${_formsDefault.default.submit('Update')}
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        _formsDefault.default.setEvents(this.form);
+        return this.form;
+    }
+}
+exports.default = new SideSettingsView();
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
 
 //# sourceMappingURL=app.js.map

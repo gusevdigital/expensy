@@ -4,13 +4,11 @@
     height: auto;
     position: relative;
 
-
-
     &__content {
         position: absolute;
         bottom: 100%;
         left: 50%;
-        transform: translateX(-45%);
+        transform: translateX(-50%);
         display: inline-block;
         padding: 0.4rem 0.8rem;
         background-color: $white;
@@ -21,6 +19,18 @@
         visibility: hidden;
         opacity: 0;
         transition: visibility $transition-time, opacity $transition-time;
+
+        &--right {
+            right: 0;
+            left: auto;
+            transform: none;
+        }
+
+        &--left {
+            left: 0;
+            right: auto;
+            transform: none;
+        }
 
         &.active {
             visibility: visible;

@@ -26,7 +26,7 @@ class HeaderView extends View {
                         </svg>
                     </span>
                     <span id="user__name" class="nav-item__title show-for-large">
-                        Denis Gusev
+                        ${this.data.account.name}
                     </span>
                 </div>
                 <ul class="nav-item__dropdown">

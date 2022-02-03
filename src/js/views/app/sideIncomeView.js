@@ -27,7 +27,9 @@ class SideIncomeView extends SideView {
     markup() {
         this.form = forms.form(this.id);
 
-        const cats = this.data.cats.filter(cat => cat.type === 'inc');
+        const cats = this.data.cats
+            ? this.data.cats.filter(cat => cat.type === 'inc')
+            : [];
 
         const markup = `
         ${forms.field('date', {
@@ -58,7 +60,7 @@ class SideIncomeView extends SideView {
             }),
             btn: {
                 title: 'Manage categories',
-                open: 'expenses_cats',
+                open: 'inc-cats',
             },
         })}
         ${forms.field('textarea', {

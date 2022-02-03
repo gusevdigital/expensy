@@ -8,7 +8,9 @@ export default class TableView extends View {
     }
 
     getTableMarkup() {
-        const cats = this.data.cats.filter(cat => cat.type === this.type);
+        const cats = this.data.cats
+            ? this.data.cats.filter(cat => cat.type === this.type)
+            : [];
 
         const numberDays = new Date(
             this.data.current_month.year,

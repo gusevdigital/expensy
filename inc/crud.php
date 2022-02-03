@@ -173,7 +173,6 @@ function expensy_delete_entry($id)
 /**
  * Create category
  *
- * @param integer $user_id
  * @param associative_array $data [type (String), name (String), color (String)]
  *
  * @return Integer|Boolean ID of a new category, or false if failed to create
@@ -194,12 +193,26 @@ function expensy_create_cat($data)
     global $wpdb;
     global $expensy_db_entry_cats;
     $user_id = get_current_user_id();
+    $type = $data['type'];
+
+    $cats_count = $wpdb->get_results("
+        SELECT 
+            MAX(cat_order) as max
+        FROM
+            $expensy_db_entry_cats
+        WHERE
+            user_id=$user_id AND cat_type='$type';
+    ");
+
+    $order = intval($cats_count[0]->max) + 1;
 
     $request = [
         'user_id' => intval($user_id),
         'cat_type' => substr(esc_html($data['type']), 0, 3),
         'cat_name' => substr(esc_html($data['name']), 0, 20),
         'cat_color' => substr(esc_html($data['color']), 0, 20),
+        'cat_order' => $order,
+        'cat_fixed' => $data['fixed'] ? 1 : 0
     ];
 
     $response = $wpdb->insert($expensy_db_entry_cats, $request);
@@ -229,7 +242,9 @@ function expensy_get_cats()
             cat_id AS id,
             cat_name AS name,
             cat_type AS type,
-            cat_color AS color
+            cat_color AS color,
+            cat_order AS order_index,
+            cat_fixed AS fixed
         FROM
             $expensy_db_entry_cats
         WHERE
@@ -263,6 +278,7 @@ function expensy_update_cat($id, $data)
 
     global $wpdb;
     global $expensy_db_entry_cats;
+
 
     // Permission check
     $cat_user_id = $wpdb->get_var("SELECT user_id FROM $expensy_db_entry_cats WHERE cat_id=$id");
@@ -298,14 +314,43 @@ function expensy_delete_cat($id)
 
     global $wpdb;
     global $expensy_db_entry_cats;
+    global $expensy_db_entries;
+
+    // User id
+    $user_id = get_current_user_id();
+
 
     // Permission check
     $cat_user_id = $wpdb->get_var("SELECT user_id FROM $expensy_db_entry_cats WHERE cat_id=$id");
-    if (get_current_user_id() !== intval($cat_user_id)) return false;
+    if ($user_id !== intval($cat_user_id)) return false;
 
+    // Get cat
+    $cat = $wpdb->get_results("
+        SELECT 
+            cat_type AS type,
+            cat_fixed AS fixed
+        FROM
+            $expensy_db_entry_cats
+        WHERE
+            cat_id=$id
+        ORDER BY
+            cat_id ASC;
+    ");
+
+    if ($cat[0]->fixed) return false;
+
+    $type = $cat[0]->type;
+
+    // Delete the cat
     $request = ['cat_id' => $id];
 
     $response = $wpdb->delete($expensy_db_entry_cats, $request);
+
+    // Get the first fixed cat
+    $fixed_cat = $wpdb->get_var("SELECT cat_id FROM $expensy_db_entry_cats WHERE user_id=$user_id AND cat_fixed=1 AND cat_type='$type'");
+
+    // Update all entries for the deleted cat
+    $updated_entries = $wpdb->update($expensy_db_entries, ['entry_cat' => $fixed_cat], ['entry_cat' => $id]);
 
     if (is_wp_error($response) || !$response) return false;
 

@@ -5,6 +5,7 @@
     &-icon {
         display: inline-block;
         height: 1.5rem;
+        min-width: 1.5rem;
         width: 1.5rem;
         border-radius: $radius-small;
         margin-right: .7rem;
@@ -51,8 +52,14 @@
             a {
                 display: inline-flex;
 
+                svg {
+                    transition: opacity $transition-time;
+                }
+
                 &:hover {
-                    opacity: 0.7;
+                    svg {
+                        opacity: 0.6
+                    }
                 }
             }
 

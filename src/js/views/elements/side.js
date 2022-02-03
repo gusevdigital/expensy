@@ -1,6 +1,7 @@
 class Side {
-    activate() {
-        document.querySelectorAll('[data-side-open]').forEach(el => {
+    activate(parent = null) {
+        const target = parent ?? document;
+        target.querySelectorAll('[data-side-open]').forEach(el => {
             el.addEventListener('click', function (e) {
                 e.preventDefault();
                 const targetId = this.dataset.sideOpen;
@@ -14,7 +15,7 @@ class Side {
             });
         });
 
-        document.querySelectorAll('[data-side-close]').forEach(el => {
+        target.querySelectorAll('[data-side-close]').forEach(el => {
             el.addEventListener('click', function (e) {
                 e.preventDefault();
                 const targetId = this.dataset.sideClose;

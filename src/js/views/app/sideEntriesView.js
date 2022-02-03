@@ -89,17 +89,17 @@ class SideEntriesView extends SideView {
             </div>
             <div class="entry__actions__item">
                 <div class="popup btn-link">
-                Delete
-                <div class="popup__content">
-                    <div class="question">
-                    <div class="question__text">Are you sure?</div>
-                    <button
-                        class="btn-small btn-small--cinnabar btn--delete"
-                    >
-                        Delete
-                    </button>
+                    Delete
+                    <div class="popup__content popup__content--left">
+                        <div class="question">
+                        <div class="question__text">Are you sure?</div>
+                        <button
+                            class="btn-small btn-small--cinnabar btn--delete"
+                        >
+                            Delete
+                        </button>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
             </div>
