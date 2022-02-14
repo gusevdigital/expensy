@@ -32,8 +32,11 @@ class Forms {
                 data.placeholder ? data.placeholder : ''
             }" autocomplete="${data.autocomplete ? data.autocomplete : ''}" ${
                 data.required ? 'required' : ''
-            } ${data.validate ? `validate-${data.validate}` : ''} />
+            } ${data.validate ? `validate-${data.validate}` : ''} ${
+                data.maxlength ? `maxlength="${data.maxlength}"` : ''
+            } />
                 </div>
+                ${data.note ? `<small>${data.note}</small>` : ''}
                 ${
                     data.btn
                         ? `<a href="${data.btn.link ? data.btn.link : '#'}" ${
@@ -47,7 +50,6 @@ class Forms {
                           } class="btn-link">${data.btn.title}</a>`
                         : ''
                 }
-                
             </div>
             `;
         }

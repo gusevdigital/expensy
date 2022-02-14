@@ -2,7 +2,7 @@ import SideView from '../sideView';
 import icons from 'url:../../../imgs/icons.svg';
 import forms from '../elements/forms';
 import popup from '../elements/popup';
-import { COLORS } from '../../config';
+import { COLORS, CAT_MAX_LENGTH } from '../../config';
 
 export default class SideCatsView extends SideView {
     constructor(type) {
@@ -62,6 +62,7 @@ export default class SideCatsView extends SideView {
             name: 'name',
             label: 'Name',
             required: true,
+            maxlength: CAT_MAX_LENGTH,
         })}
         ${forms.field('hidden', {
             id: this.id,
@@ -82,19 +83,23 @@ export default class SideCatsView extends SideView {
                 cat => `
         <li class="cat-list__item" data-id="${cat.id}">
             <span class="cat-list__item__move">
-            <a href="#" class="cat-list__item--up">
+            <a href="#" data-move="up">
                 <svg height="21" width="21">
                 <use xlink:href="${icons}#icon-up"></use>
                 </svg>
             </a>
-            <a href="#" class="cat-list__item--down">
+            <a href="#" data-move="down">
                 <svg height="21" width="21">
                 <use xlink:href="${icons}#icon-down"></use>
                 </svg>
             </a>
             </span>
             <div class="cat">
-            <span class="cat-icon bg-${cat.color}"></span>${cat.name}
+            <span class="cat-icon bg-${
+                cat.color
+            }"></span><span class="cat-name" data-name="${
+                    cat.name
+                }" contenteditable>${cat.name}</span>
             </div>
             ${
                 !Number.parseInt(cat.fixed)
@@ -114,12 +119,9 @@ export default class SideCatsView extends SideView {
                             </div>
                         </div>
                     </a>
-
-                   
                     `
                     : ''
             }
-            
         </li>
         `
             )
@@ -142,5 +144,97 @@ export default class SideCatsView extends SideView {
             const id = deleteBtn.closest('li.cat-list__item').dataset.id;
             handler(id, this.type);
         });
+    }
+
+    addHandlerOrderCats(handler) {
+        this.targetElement
+            .querySelectorAll('.cat-list__item__move a')
+            .forEach(el => {
+                el.addEventListener('click', e => {
+                    e.preventDefault();
+                    const el = e.currentTarget;
+                    const parentEl = el.closest('.cat-list__item');
+                    if (!parentEl) return;
+                    if (el.dataset.move === 'down') {
+                        const nextEl = parentEl.nextElementSibling;
+                        if (!nextEl) return;
+                        nextEl.insertAdjacentElement('afterend', parentEl);
+                    }
+                    if (el.dataset.move === 'up') {
+                        const prevEl = parentEl.previousElementSibling;
+                        if (!prevEl) return;
+                        prevEl.insertAdjacentElement('beforebegin', parentEl);
+                    }
+
+                    const catsParentEl = parentEl.closest('.cat-list');
+                    if (!catsParentEl) return;
+                    const allCatsEl =
+                        catsParentEl.querySelectorAll('.cat-list__item');
+                    if (!allCatsEl) return;
+
+                    const data = {
+                        type: this.type,
+                        cats: [],
+                    };
+                    allCatsEl.forEach(el => data.cats.push(el.dataset.id));
+                    handler(data);
+                });
+            });
+    }
+
+    addHandlerEditCat(handler) {
+        this.targetElement.querySelectorAll('.cat-name').forEach(el => {
+            el.addEventListener('keydown', e => {
+                if (e.keyCode === 13) {
+                    e.preventDefault();
+                    e.target.blur();
+                    this._handleEditCat(handler, e.target);
+                    return false;
+                }
+            });
+            el.addEventListener('input', e => {
+                console.log(e.target.textContent, e.target.textContent.length);
+                if (e.target.textContent.length > CAT_MAX_LENGTH) {
+                    console.log(e);
+                    e.target.textContent = e.target.textContent.slice(
+                        0,
+                        CAT_MAX_LENGTH
+                    );
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+
+                    range.setStart(e.target.childNodes[0], CAT_MAX_LENGTH);
+                    range.collapse(true);
+
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            });
+
+            el.addEventListener('focusout', e => {
+                this._handleEditCat(handler, e.target);
+            });
+        });
+    }
+
+    _handleEditCat(handler, el) {
+        const catEl = el.closest('.cat-list__item');
+        if (!catEl) return;
+        const id = catEl.dataset.id;
+        if (!id) return;
+        const oldName = el.dataset.name;
+        const newName = el.textContent;
+        if (!newName) {
+            el.textContent = oldName;
+            return;
+        }
+        if (oldName !== newName) {
+            el.dataset.name = newName;
+            handler({
+                name: newName,
+                type: this.type,
+                id,
+            });
+        }
     }
 }

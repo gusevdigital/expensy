@@ -4,7 +4,6 @@ export const CLEAN_NOTICE_DELAY = 4000;
 export const CSS_TRANSITION_TIME = 300;
 export const CURRENCIES = ['usd', 'eur', 'rub'];
 export const LOCALES = ['en', 'en', 'ru'];
-export const CAT_TRUNCATE_LENGTH = 16;
 export const SUM_FONT_SWITCH_CHAR = 10;
 export const COLORS = {
     dingley: 'Dingley',
@@ -20,3 +19,4 @@ export const COLORS = {
     royal_blue: 'Royal blue',
     shark: 'Shark',
 };
+export const CAT_MAX_LENGTH = 18;

@@ -36,6 +36,6 @@ function expensy_ajax_edit_entry()
     // KBAI!
     wp_die(json_encode([
         'status' => 0,
-        'message' => "Failed to update. ☹" . print_r($_POST, 1)
+        'message' => "Failed to update. ☹"
     ]));
 }

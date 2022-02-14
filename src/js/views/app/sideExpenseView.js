@@ -50,7 +50,7 @@ class SideExpenseView extends SideView {
             label: 'Amount',
             required: true,
             placeholder: '0.00',
-            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${icons}#icon-dollar"></use></svg>`,
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${icons}#icon-${this.data.account.currency}"></use></svg>`,
         })}
         ${forms.field('select', {
             id: this.id,

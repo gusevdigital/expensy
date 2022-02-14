@@ -558,6 +558,8 @@ var _sideCatsView = require("./views/app/sideCatsView");
 var _sideCatsViewDefault = parcelHelpers.interopDefault(_sideCatsView);
 var _sideSettingsView = require("./views/app/sideSettingsView");
 var _sideSettingsViewDefault = parcelHelpers.interopDefault(_sideSettingsView);
+var _sideSettingsDeleteView = require("./views/app/sideSettingsDeleteView");
+var _sideSettingsDeleteViewDefault = parcelHelpers.interopDefault(_sideSettingsDeleteView);
 var _tableIncomeView = require("./views/app/tableIncomeView");
 var _tableIncomeViewDefault = parcelHelpers.interopDefault(_tableIncomeView);
 var _tableExpenseView = require("./views/app/tableExpenseView");
@@ -630,11 +632,14 @@ class Page {
         sideIncomeCatsView.render(_modelDefault.default.state);
         sideExpenseCatsView.render(_modelDefault.default.state);
         _sideSettingsViewDefault.default.render(_modelDefault.default.state);
+        _sideSettingsDeleteViewDefault.default.render();
         // App screen handlers
         _headerViewDefault.default.addHandlerLogout(App.controlLogout);
         _switchMonthViewDefault.default.addHandlerSwitchMonth(App.controlSwitchMonth);
         _sideEntriesViewDefault.default.addHandlerDeleteEntry(App.controlDeleteEntry);
         _sideEntriesViewDefault.default.addHandlerShowEditEntry(App.controlShowEditEntry);
+        _sideSettingsViewDefault.default.addHandlerForm(App.controlUpdateSettings);
+        _sideSettingsDeleteViewDefault.default.addHandlerDeleteAccount(App.controlDeleteAccount);
         _tableExpenseViewDefault.default.addHandlerShowEntries(App.controlShowEntries);
         _tableIncomeViewDefault.default.addHandlerShowEntries(App.controlShowEntries);
         // Dynamic sides
@@ -658,10 +663,14 @@ class Page {
     static setupExpenseCatsSide() {
         sideExpenseCatsView.addHandlerForm(App.controlAddExpenseCat);
         sideExpenseCatsView.addHandlerDeleteCat(App.controlDeleteCat);
+        sideExpenseCatsView.addHandlerEditCat(App.controlEditCat);
+        sideExpenseCatsView.addHandlerOrderCats(App.controlOrderCats);
     }
     static setupIncomeCatsSide() {
         sideIncomeCatsView.addHandlerForm(App.controlAddIncomeCat);
         sideIncomeCatsView.addHandlerDeleteCat(App.controlDeleteCat);
+        sideIncomeCatsView.addHandlerEditCat(App.controlEditCat);
+        sideIncomeCatsView.addHandlerOrderCats(App.controlOrderCats);
     }
 }
 class App {
@@ -870,6 +879,7 @@ class App {
             sideIncomeCatsView.startLoading();
             const response = await _modelDefault.default.addCat(data);
             sideIncomeCatsView.update(_modelDefault.default.state);
+            sideIncomeCatsView.renderMessage('success', response.message);
             _tableIncomeViewDefault.default.update(_modelDefault.default.state);
             _sideIncomeViewDefault.default.update(_modelDefault.default.state);
             Page.setupIncomeSide();
@@ -919,10 +929,91 @@ class App {
             view.stopLoading();
         }
     }
+    /*
+     * EDIT CAT
+     */ static async controlEditCat(data) {
+        const view = data.type === 'inc' ? sideIncomeCatsView : sideExpenseCatsView;
+        const setupView = data.type === 'inc' ? Page.setupIncomeCatsSide : Page.setupExpenseCatsSide;
+        try {
+            view.startLoading();
+            const response = await _modelDefault.default.editCat(data);
+            if (data.type === 'inc') {
+                _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+                _sideIncomeViewDefault.default.update(_modelDefault.default.state);
+            } else {
+                _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+                _sideExpenseViewDefault.default.update(_modelDefault.default.state);
+            }
+            setupView();
+        } catch (err) {
+            console.log(err);
+        } finally{
+            view.stopLoading();
+        }
+    }
+    /*
+     * CONTROL ORDER CATS
+     */ static async controlOrderCats(data) {
+        const view = data.type === 'inc' ? sideIncomeCatsView : sideExpenseCatsView;
+        const setupView = data.type === 'inc' ? Page.setupIncomeCatsSide : Page.setupExpenseCatsSide;
+        try {
+            view.startLoading();
+            const response = await _modelDefault.default.orderCats(data);
+            console.log(_modelDefault.default.state);
+            if (data.type === 'inc') {
+                _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+                _sideIncomeViewDefault.default.update(_modelDefault.default.state);
+            } else {
+                _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+                _sideExpenseViewDefault.default.update(_modelDefault.default.state);
+            }
+            setupView();
+        } catch (err) {
+            console.log(err);
+        } finally{
+            view.stopLoading();
+        }
+    }
+    /*
+     * CONTROL UPDATE SETTINGS
+     */ static async controlUpdateSettings(data) {
+        try {
+            _sideSettingsViewDefault.default.startLoading();
+            const response = await _modelDefault.default.updateSettings(data);
+            if (data.prev_name !== data.name) _headerViewDefault.default.update(_modelDefault.default.state);
+            if (data.prev_currentcy !== data.currency) {
+                _summaryViewDefault.default.update(_modelDefault.default.state);
+                _tableIncomeViewDefault.default.update(_modelDefault.default.state);
+                _tableExpenseViewDefault.default.update(_modelDefault.default.state);
+                _sideIncomeViewDefault.default.update(_modelDefault.default.state);
+                _sideExpenseViewDefault.default.update(_modelDefault.default.state);
+                Page.setupIncomeSide();
+                Page.setupExpenseSide();
+                _sideSettingsViewDefault.default.renderMessage('success', response.message);
+                if (data.password) _helpers.refresh();
+            }
+        } catch (err) {
+            _sideSettingsViewDefault.default.renderMessage('error', err.message);
+        } finally{
+            _sideSettingsViewDefault.default.stopLoading();
+        }
+    }
+    /*
+     * CONTROL DELETE ACCOUNT
+     */ static async controlDeleteAccount() {
+        try {
+            _rootViewDefault.default.startLoading();
+            const response = await _modelDefault.default.deleteAccount();
+            _helpers.refresh();
+        } catch (err) {
+            console.log(err);
+            _rootViewDefault.default.stopLoading();
+        }
+    }
 }
 const app = new App();
 
-},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/switchMonthView":"bvQyF","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/app/sideEntriesView":"7GwJs","./views/app/sideEditEntryView":"5C9dy","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","./views/elements/tableDrag":"1kCnj","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./views/app/sideCatsView":"cOysY","./views/app/sideSettingsView":"9j92C"}],"95FYz":[function(require,module,exports) {
+},{"core-js/stable":"95FYz","regenerator-runtime/runtime":"1EBPE","../sass/main.scss":"8wtWA","./config":"6V52N","./helpers":"9RX9R","./model":"1pVJj","./views/rootView":"aLCaZ","./views/headerView":"8oUFr","./views/login/lottieView":"8aRRg","./views/login/sideLoginView":"f9Sqk","./views/login/sideResetView":"kpUTc","./views/login/sideRegisterView":"8jgGO","./views/app/switchMonthView":"bvQyF","./views/app/summaryView":"fwaKU","./views/app/sideExpenseView":"1qJsD","./views/app/sideIncomeView":"4OLon","./views/app/sideEntriesView":"7GwJs","./views/app/sideEditEntryView":"5C9dy","./views/app/tableIncomeView":"1oR1w","./views/app/tableExpenseView":"onJxd","./views/setup/setupView":"3y9dW","./views/elements/side":"7yLQt","./views/elements/dropdown":"fxINA","./views/elements/select":"hvZUh","./views/elements/numberInput":"8iPnT","./views/elements/tableDrag":"1kCnj","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV","./views/app/sideCatsView":"cOysY","./views/app/sideSettingsView":"9j92C","./views/app/sideSettingsDeleteView":"iLLqI"}],"95FYz":[function(require,module,exports) {
 require('../modules/es.symbol');
 require('../modules/es.symbol.description');
 require('../modules/es.symbol.async-iterator');
@@ -15251,11 +15342,11 @@ parcelHelpers.export(exports, "CURRENCIES", ()=>CURRENCIES
 );
 parcelHelpers.export(exports, "LOCALES", ()=>LOCALES
 );
-parcelHelpers.export(exports, "CAT_TRUNCATE_LENGTH", ()=>CAT_TRUNCATE_LENGTH
-);
 parcelHelpers.export(exports, "SUM_FONT_SWITCH_CHAR", ()=>SUM_FONT_SWITCH_CHAR
 );
 parcelHelpers.export(exports, "COLORS", ()=>COLORS
+);
+parcelHelpers.export(exports, "CAT_MAX_LENGTH", ()=>CAT_MAX_LENGTH
 );
 const TIMEOUT_SECONDS = 15;
 const REFRESH_DELAY = 1000;
@@ -15271,7 +15362,6 @@ const LOCALES = [
     'en',
     'ru'
 ];
-const CAT_TRUNCATE_LENGTH = 16;
 const SUM_FONT_SWITCH_CHAR = 10;
 const COLORS = {
     dingley: 'Dingley',
@@ -15287,6 +15377,7 @@ const COLORS = {
     royal_blue: 'Royal blue',
     shark: 'Shark'
 };
+const CAT_MAX_LENGTH = 18;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"ciiiV":[function(require,module,exports) {
 exports.interopDefault = function(a) {
@@ -15354,8 +15445,9 @@ const timeout = function(s) {
 let EXPENSY_AJAX_PROGRESS = false;
 const AJAX = async function(action, uploadData) {
     try {
-        if (EXPENSY_AJAX_PROGRESS) throw 'There is something in progress already...';
-        else EXPENSY_AJAX_PROGRESS = true;
+        // if (EXPENSY_AJAX_PROGRESS)
+        //     throw 'There is something in progress already...';
+        // else EXPENSY_AJAX_PROGRESS = true;
         const options = {
             action,
             nonce: themeData.ajax_nonce,
@@ -15515,7 +15607,7 @@ class Model {
         try {
             const response = await _helpers.AJAX('setup', data);
             if (response.status) {
-                this.state.starting_budget = data.starting_budget;
+                this.state.starting_budget = parseFloat(String(data.starting_budget).replaceAll(',', ''));
                 this.state.account.currency = data.currency;
                 return response;
             } else throw response.message;
@@ -15622,6 +15714,57 @@ class Model {
             throw err;
         }
     }
+    async editCat(data) {
+        try {
+            const response = await _helpers.AJAX('edit_cat', data);
+            if (response.status) {
+                // Update cat
+                const catIndex = this.state.cats.findIndex((cat)=>cat.id === data.id
+                );
+                this.state.cats[catIndex] = {
+                    ...this.state.cats[catIndex],
+                    name: data.name
+                };
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async orderCats(data) {
+        try {
+            const response = await _helpers.AJAX('order_cats', data);
+            if (response.status) {
+                // Update cats
+                this.state.cats = response.cats;
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async updateSettings(data) {
+        try {
+            const response = await _helpers.AJAX('update_settings', data);
+            if (response.status) {
+                this.state.account.currency = response.currency;
+                this.state.account.name = response.name;
+                return response;
+            } else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
+    async deleteAccount() {
+        try {
+            const response = await _helpers.AJAX('delete_account', {
+            });
+            if (response.status) return response;
+            else throw response.message;
+        } catch (err) {
+            throw err;
+        }
+    }
     _stateAddEntry(response, data, type) {
         const entryDate = new Date(data.date);
         if (entryDate.getFullYear() < parseInt(this.state.current_month.year) || entryDate.getMonth() + 1 < parseInt(this.state.current_month.month)) {
@@ -15693,14 +15836,18 @@ class Model {
         };
     }
     _addCat(id, data) {
-        this.state.cats = [
+        const newCat = {
+            id: String(id),
+            name: data.name,
+            type: data.type,
+            color: data.color
+        };
+        if (this.state.cats === null || typeof this.state.cats[Symbol.iterator] !== 'function') this.state.cats = [
+            newCat
+        ];
+        else this.state.cats = [
             ...this.state.cats,
-            {
-                id: String(id),
-                name: data.name,
-                type: data.type,
-                color: data.color
-            }, 
+            newCat
         ];
     }
 }
@@ -25290,10 +25437,10 @@ class Forms {
                 ${data.label ? `<label for="${data.id}-${data.name}">${data.label}</label>` : ''}
                 <div class="input__group">
                     ${data.icon ? data.icon : ''}
-                    <input type="${type === 'number' ? 'text' : type}" value="${data.value ? data.value : ''}" class="input__field" id="${data.id}-${data.name}" name="${data.name}" placeholder="${data.placeholder ? data.placeholder : ''}" autocomplete="${data.autocomplete ? data.autocomplete : ''}" ${data.required ? 'required' : ''} ${data.validate ? `validate-${data.validate}` : ''} />
+                    <input type="${type === 'number' ? 'text' : type}" value="${data.value ? data.value : ''}" class="input__field" id="${data.id}-${data.name}" name="${data.name}" placeholder="${data.placeholder ? data.placeholder : ''}" autocomplete="${data.autocomplete ? data.autocomplete : ''}" ${data.required ? 'required' : ''} ${data.validate ? `validate-${data.validate}` : ''} ${data.maxlength ? `maxlength="${data.maxlength}"` : ''} />
                 </div>
+                ${data.note ? `<small>${data.note}</small>` : ''}
                 ${data.btn ? `<a href="${data.btn.link ? data.btn.link : '#'}" ${data.btn.open ? `data-side-open="${data.btn.open}"` : ''} ${data.btn.close ? `data-side-close="${data.btn.close}"` : ''} class="btn-link">${data.btn.title}</a>` : ''}
-                
             </div>
             `;
         if (type === 'textarea') return `
@@ -25623,7 +25770,8 @@ class SideRegisterView extends _sideViewDefault.default {
             name: 'password',
             label: 'Password',
             autocomplete: 'new-password',
-            required: true
+            required: true,
+            note: 'Must be at least 12 characters.'
         })}
         ${_formsDefault.default.field('password', {
             id: this.id,
@@ -25773,7 +25921,7 @@ class SideExpenseView extends _sideViewDefault.default {
             label: 'Amount',
             required: true,
             placeholder: '0.00',
-            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-${this.data.account.currency}"></use></svg>`
         })}
         ${_formsDefault.default.field('select', {
             id: this.id,
@@ -25852,7 +26000,7 @@ class SideIncomeView extends _sideViewDefault.default {
             label: 'Amount',
             required: true,
             placeholder: '0.00',
-            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-${this.data.account.currency}"></use></svg>`
         })}
         ${_formsDefault.default.field('select', {
             id: this.id,
@@ -26044,7 +26192,7 @@ class SideEditEntryView extends _sideViewDefault.default {
             label: 'Amount',
             required: true,
             placeholder: '0.00',
-            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg>`,
+            icon: `<svg class="input__icon" height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-${this.data.account.currency}"></use></svg>`,
             value: Number.parseFloat(entry.amount).toFixed(2)
         })}
         ${_formsDefault.default.field('select', {
@@ -26137,7 +26285,7 @@ class TableView extends _viewDefault.default {
                 ${cats.map((cat)=>`
                 <div class="cal-side__item">
                     <div class="cat">
-                        <span class="cat-icon bg-${cat.color}"></span><span class="cat-content"><span class="cat-content__title">${_helpers.truncate(cat.name.trim(), _config.CAT_TRUNCATE_LENGTH)}</span><span class="cat-content__subtitle">${_helpers.formatAmount(Object.values(this.data.entries).flat().filter((entry)=>entry.cat === cat.id
+                        <span class="cat-icon bg-${cat.color}"></span><span class="cat-content"><span class="cat-content__title">${_helpers.truncate(cat.name.trim(), _config.CAT_MAX_LENGTH)}</span><span class="cat-content__subtitle">${_helpers.formatAmount(Object.values(this.data.entries).flat().filter((entry)=>entry.cat === cat.id
             ).reduce((prev, curr)=>prev + parseFloat(curr.amount)
             , 0), this.data.account.currency)}</span></span>
                     </div>
@@ -26266,16 +26414,16 @@ class SetupView extends _viewDefault.default {
             options: [
                 {
                     value: 'usd',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg><span>Dollar</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-usd"></use></svg><span>Dollar</span>`,
                     selected: true
                 },
                 {
                     value: 'eur',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-euro"></use></svg><span>Euro</span>`
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-eur"></use></svg><span>Euro</span>`
                 },
                 {
                     value: 'rub',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-ruble"></use></svg><span>Ruble</span>`
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-rub"></use></svg><span>Ruble</span>`
                 }, 
             ]
         })}
@@ -26448,7 +26596,8 @@ class SideCatsView extends _sideViewDefault.default {
             id: this.id,
             name: 'name',
             label: 'Name',
-            required: true
+            required: true,
+            maxlength: _config.CAT_MAX_LENGTH
         })}
         ${_formsDefault.default.field('hidden', {
             id: this.id,
@@ -26465,19 +26614,19 @@ class SideCatsView extends _sideViewDefault.default {
         ${cats.map((cat)=>`
         <li class="cat-list__item" data-id="${cat.id}">
             <span class="cat-list__item__move">
-            <a href="#" class="cat-list__item--up">
+            <a href="#" data-move="up">
                 <svg height="21" width="21">
                 <use xlink:href="${_iconsSvgDefault.default}#icon-up"></use>
                 </svg>
             </a>
-            <a href="#" class="cat-list__item--down">
+            <a href="#" data-move="down">
                 <svg height="21" width="21">
                 <use xlink:href="${_iconsSvgDefault.default}#icon-down"></use>
                 </svg>
             </a>
             </span>
             <div class="cat">
-            <span class="cat-icon bg-${cat.color}"></span>${cat.name}
+            <span class="cat-icon bg-${cat.color}"></span><span class="cat-name" data-name="${cat.name}" contenteditable>${cat.name}</span>
             </div>
             ${!Number.parseInt(cat.fixed) ? `
                     <a href="#" class="popup">
@@ -26495,10 +26644,7 @@ class SideCatsView extends _sideViewDefault.default {
                             </div>
                         </div>
                     </a>
-
-                   
                     ` : ''}
-            
         </li>
         `
         ).join('')}
@@ -26516,6 +26662,85 @@ class SideCatsView extends _sideViewDefault.default {
             const id = deleteBtn.closest('li.cat-list__item').dataset.id;
             handler(id, this.type);
         });
+    }
+    addHandlerOrderCats(handler) {
+        this.targetElement.querySelectorAll('.cat-list__item__move a').forEach((el1)=>{
+            el1.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const el2 = e.currentTarget;
+                const parentEl = el2.closest('.cat-list__item');
+                if (!parentEl) return;
+                if (el2.dataset.move === 'down') {
+                    const nextEl = parentEl.nextElementSibling;
+                    if (!nextEl) return;
+                    nextEl.insertAdjacentElement('afterend', parentEl);
+                }
+                if (el2.dataset.move === 'up') {
+                    const prevEl = parentEl.previousElementSibling;
+                    if (!prevEl) return;
+                    prevEl.insertAdjacentElement('beforebegin', parentEl);
+                }
+                const catsParentEl = parentEl.closest('.cat-list');
+                if (!catsParentEl) return;
+                const allCatsEl = catsParentEl.querySelectorAll('.cat-list__item');
+                if (!allCatsEl) return;
+                const data = {
+                    type: this.type,
+                    cats: []
+                };
+                allCatsEl.forEach((el)=>data.cats.push(el.dataset.id)
+                );
+                handler(data);
+            });
+        });
+    }
+    addHandlerEditCat(handler) {
+        this.targetElement.querySelectorAll('.cat-name').forEach((el)=>{
+            el.addEventListener('keydown', (e)=>{
+                if (e.keyCode === 13) {
+                    e.preventDefault();
+                    e.target.blur();
+                    this._handleEditCat(handler, e.target);
+                    return false;
+                }
+            });
+            el.addEventListener('input', (e)=>{
+                console.log(e.target.textContent, e.target.textContent.length);
+                if (e.target.textContent.length > _config.CAT_MAX_LENGTH) {
+                    console.log(e);
+                    e.target.textContent = e.target.textContent.slice(0, _config.CAT_MAX_LENGTH);
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    range.setStart(e.target.childNodes[0], _config.CAT_MAX_LENGTH);
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            });
+            el.addEventListener('focusout', (e)=>{
+                this._handleEditCat(handler, e.target);
+            });
+        });
+    }
+    _handleEditCat(handler, el) {
+        const catEl = el.closest('.cat-list__item');
+        if (!catEl) return;
+        const id = catEl.dataset.id;
+        if (!id) return;
+        const oldName = el.dataset.name;
+        const newName = el.textContent;
+        if (!newName) {
+            el.textContent = oldName;
+            return;
+        }
+        if (oldName !== newName) {
+            el.dataset.name = newName;
+            handler({
+                name: newName,
+                type: this.type,
+                id
+            });
+        }
     }
 }
 exports.default = SideCatsView;
@@ -26567,17 +26792,16 @@ class SideSettingsView extends _sideViewDefault.default {
         </div>
         ${_formsDefault.default.field('password', {
             id: this.id,
-            name: 'new_password',
+            name: 'password',
             label: 'New password',
-            autocomplete: 'new-password',
-            required: true
+            note: '<strong>Will refresh the page</strong>. Leave blank if you do not wish to update your password.',
+            autocomplete: 'new-password'
         })}
         ${_formsDefault.default.field('password', {
             id: this.id,
-            name: 'confirm_new_password',
+            name: 'confirm_password',
             label: 'Confirm new password',
-            autocomplete: 'new-password',
-            required: true
+            autocomplete: 'new-password'
         })}
         ${_formsDefault.default.field('select', {
             id: this.id,
@@ -26586,22 +26810,37 @@ class SideSettingsView extends _sideViewDefault.default {
             options: [
                 {
                     value: 'usd',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-dollar"></use></svg><span>Dollar</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-usd"></use></svg><span>Dollar</span>`,
                     selected: this.data.account.currency === 'usd'
                 },
                 {
                     value: 'eur',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-euro"></use></svg><span>Euro</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-eur"></use></svg><span>Euro</span>`,
                     selected: this.data.account.currency === 'eur'
                 },
                 {
                     value: 'rub',
-                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-ruble"></use></svg><span>Ruble</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${_iconsSvgDefault.default}#icon-rub"></use></svg><span>Ruble</span>`,
                     selected: this.data.account.currency === 'rub'
                 }, 
             ]
         })}
-        ${_formsDefault.default.submit('Update')}
+        ${_formsDefault.default.field('hidden', {
+            id: this.id,
+            name: 'prev_currency',
+            value: this.data.account.currency
+        })}
+        ${_formsDefault.default.field('hidden', {
+            id: this.id,
+            name: 'prev_name',
+            value: this.data.account.name
+        })}
+        <div class="btn-group">
+            ${_formsDefault.default.submit('Update')}
+            <button class="btn-link" data-side-open="settings-delete">
+                Delete account
+            </button>
+        </div>
         `;
         this.form.insertAdjacentHTML('afterbegin', markup);
         _formsDefault.default.setEvents(this.form);
@@ -26609,6 +26848,60 @@ class SideSettingsView extends _sideViewDefault.default {
     }
 }
 exports.default = new SideSettingsView();
+
+},{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}],"iLLqI":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sideView = require("../sideView");
+var _sideViewDefault = parcelHelpers.interopDefault(_sideView);
+var _iconsSvg = require("url:../../../imgs/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _forms = require("../elements/forms");
+var _formsDefault = parcelHelpers.interopDefault(_forms);
+class SideSettingsDeleteView extends _sideViewDefault.default {
+    constructor(){
+        super();
+        this.id = 'settings-delete';
+    }
+    setParent() {
+        this.parentElement = document.querySelector('.sides');
+    }
+    headerMarkup() {
+        return `
+        <div class="side__nav">
+            <a href="#" data-side-close="${this.id}">
+                <svg height="21" width="21">
+                    <use xlink:href="${_iconsSvgDefault.default}#icon-close"></use>
+                </svg>
+            </a>
+            </div>
+        <h2 class="side__title">Are you sure?</h2>
+        `;
+    }
+    markup() {
+        this.form = _formsDefault.default.form(this.id);
+        const markup = `
+        <div class="btn-group">
+            <button class="btn btn-primary" data-side-close="${this.id}">
+                No!
+            </button>
+            <button type="submit" class="btn-link" id="delete-account">
+                Yes, delete account :(
+            </button>
+        </div>
+        `;
+        this.form.insertAdjacentHTML('afterbegin', markup);
+        _formsDefault.default.setEvents(this.form);
+        return this.form;
+    }
+    addHandlerDeleteAccount(handler) {
+        document.querySelector('#delete-account').addEventListener('click', (e)=>{
+            e.preventDefault();
+            handler();
+        });
+    }
+}
+exports.default = new SideSettingsDeleteView();
 
 },{"../sideView":"gcAW0","url:../../../imgs/icons.svg":"jqkKm","../elements/forms":"4tFue","@parcel/transformer-js/src/esmodule-helpers.js":"ciiiV"}]},["365KV","5mvL2"], "5mvL2", "parcelRequire3f96")
 

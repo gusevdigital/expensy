@@ -31,7 +31,7 @@ function expensy_create_entry($data)
         'entry_type' => substr(esc_html($data['type']), 0, 3),
         'entry_amount' => floatval(preg_replace('/[^0-9.]+/', '', strval($data['amount']))),
         'entry_cat' => intval($data['cat']),
-        'entry_note' => isset($data['note']) && $data['note'] ? substr(trim(esc_html($data['note'])), 0, 200) : ''
+        'entry_note' => isset($data['note']) && $data['note'] ? substr(trim(esc_sql($data['note'])), 0, 200) : ''
     ];
 
     $response = $wpdb->insert($expensy_db_entries, $request);
@@ -126,7 +126,7 @@ function expensy_update_entry($id, $data)
         'entry_date' => date('Y-m-d', strtotime($data['date'])),
         'entry_amount' => floatval(preg_replace('/[^0-9.]+/', '', strval($data['amount']))),
         'entry_cat' => intval($data['cat']),
-        'entry_note' => isset($data['note']) && $data['note'] ? substr(trim(esc_html($data['note'])), 0, 200) : ''
+        'entry_note' => isset($data['note']) && $data['note'] ? substr(trim(esc_sql($data['note'])), 0, 200) : ''
     ];
 
     $response = $wpdb->update($expensy_db_entries, $request, ['id' => $id]);
@@ -209,8 +209,8 @@ function expensy_create_cat($data)
     $request = [
         'user_id' => intval($user_id),
         'cat_type' => substr(esc_html($data['type']), 0, 3),
-        'cat_name' => substr(esc_html($data['name']), 0, 20),
-        'cat_color' => substr(esc_html($data['color']), 0, 20),
+        'cat_name' => substr(esc_sql($data['name']), 0, 18),
+        'cat_color' => substr(esc_sql($data['color']), 0, 20),
         'cat_order' => $order,
         'cat_fixed' => $data['fixed'] ? 1 : 0
     ];
@@ -250,7 +250,7 @@ function expensy_get_cats()
         WHERE
             user_id=$user_id
         ORDER BY
-            cat_id ASC;
+            cat_order ASC;
     ");
 
     if (is_wp_error($response) || !$response || !is_array($response)) return false;
@@ -358,6 +358,48 @@ function expensy_delete_cat($id)
 }
 
 /**
+ * Change categories order
+ *
+ * @param integer $id Category ID
+ * @param array $cats
+ *
+ * @return interger Number or rows affected or false on error
+ */
+
+function expensy_order_cats($cats)
+{
+    // Check user
+    if (!is_user_logged_in()) return false;
+
+    // Data check
+    if (!isset($cats) || !is_array($cats) || !$cats) return false;
+
+    global $wpdb;
+    global $expensy_db_entry_cats;
+    $user_id = get_current_user_id();
+
+    // Prepare data
+    $cat_list = implode(', ', $cats);
+
+    $request = "UPDATE $expensy_db_entry_cats\nSET cat_order=(case ";
+    foreach ($cats as $i => $id) {
+        $id = intval($id);
+        $order = $i + 1;
+        $request .= "when cat_id=$id then $order\n";
+    }
+    $request .= "else null\nend)\n";
+    $request .= "WHERE user_id=$user_id AND cat_id IN ($cat_list);";
+
+    // Update SQL
+    $response = $wpdb->query($wpdb->prepare($request));
+
+    if (is_wp_error($response) || $response === false) return false;
+
+    return true;
+}
+
+
+/**
  * Get entries count for a specific month and a year
  *
  * @param integer $month (Optional) Month number from 1 to 12. Default: current month. Could be just text 'next' or 'prev' to get next or previous month data
@@ -456,4 +498,29 @@ function expensy_get_starting_budget($month = null, $year = null)
     $sum = floatval($sum) + floatval($setup_starting_budget);
 
     return $sum;
+}
+
+/**
+ * Delete user data
+ *
+ * @return boolean True on success, false on fail.
+ */
+
+function expensy_delete_user_data()
+{
+    // Check user
+    if (!is_user_logged_in()) return false;
+
+    $user_id = get_current_user_id();
+
+    global $wpdb;
+    global $expensy_db_entries;
+    global $expensy_db_entry_cats;
+
+    $request = $wpdb->prepare("DELETE entries.*, cats.* from $expensy_db_entries AS entries, $expensy_db_entry_cats AS cats WHERE entries.user_id=$user_id AND cats.user_id=$user_id;");
+
+    $response = $wpdb->query($request);
+
+    if ($response) return true;
+    else return false;
 }

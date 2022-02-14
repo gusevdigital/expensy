@@ -32,16 +32,16 @@ class SetupView extends View {
             options: [
                 {
                     value: 'usd',
-                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-dollar"></use></svg><span>Dollar</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-usd"></use></svg><span>Dollar</span>`,
                     selected: true,
                 },
                 {
                     value: 'eur',
-                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-euro"></use></svg><span>Euro</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-eur"></use></svg><span>Euro</span>`,
                 },
                 {
                     value: 'rub',
-                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-ruble"></use></svg><span>Ruble</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-rub"></use></svg><span>Ruble</span>`,
                 },
             ],
         })}

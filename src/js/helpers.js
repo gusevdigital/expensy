@@ -12,9 +12,9 @@ let EXPENSY_AJAX_PROGRESS = false;
 
 export const AJAX = async function (action, uploadData = undefined) {
     try {
-        if (EXPENSY_AJAX_PROGRESS)
-            throw 'There is something in progress already...';
-        else EXPENSY_AJAX_PROGRESS = true;
+        // if (EXPENSY_AJAX_PROGRESS)
+        //     throw 'There is something in progress already...';
+        // else EXPENSY_AJAX_PROGRESS = true;
         const options = {
             action,
             nonce: themeData.ajax_nonce,

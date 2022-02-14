@@ -44,17 +44,16 @@ class SideSettingsView extends SideView {
         </div>
         ${forms.field('password', {
             id: this.id,
-            name: 'new_password',
+            name: 'password',
             label: 'New password',
+            note: '<strong>Will refresh the page</strong>. Leave blank if you do not wish to update your password.',
             autocomplete: 'new-password',
-            required: true,
         })}
         ${forms.field('password', {
             id: this.id,
-            name: 'confirm_new_password',
+            name: 'confirm_password',
             label: 'Confirm new password',
             autocomplete: 'new-password',
-            required: true,
         })}
         ${forms.field('select', {
             id: this.id,
@@ -63,22 +62,37 @@ class SideSettingsView extends SideView {
             options: [
                 {
                     value: 'usd',
-                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-dollar"></use></svg><span>Dollar</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-usd"></use></svg><span>Dollar</span>`,
                     selected: this.data.account.currency === 'usd',
                 },
                 {
                     value: 'eur',
-                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-euro"></use></svg><span>Euro</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-eur"></use></svg><span>Euro</span>`,
                     selected: this.data.account.currency === 'eur',
                 },
                 {
                     value: 'rub',
-                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-ruble"></use></svg><span>Ruble</span>`,
+                    content: `<svg height="21" width="21"><use xlink:href="${icons}#icon-rub"></use></svg><span>Ruble</span>`,
                     selected: this.data.account.currency === 'rub',
                 },
             ],
         })}
-        ${forms.submit('Update')}
+        ${forms.field('hidden', {
+            id: this.id,
+            name: 'prev_currency',
+            value: this.data.account.currency,
+        })}
+        ${forms.field('hidden', {
+            id: this.id,
+            name: 'prev_name',
+            value: this.data.account.name,
+        })}
+        <div class="btn-group">
+            ${forms.submit('Update')}
+            <button class="btn-link" data-side-open="settings-delete">
+                Delete account
+            </button>
+        </div>
         `;
 
         this.form.insertAdjacentHTML('afterbegin', markup);

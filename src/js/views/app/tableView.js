@@ -1,6 +1,6 @@
 import View from '../View';
 import { formatAmount, truncate, formatDate } from '../../helpers';
-import { CAT_TRUNCATE_LENGTH } from '../../config';
+import { CAT_MAX_LENGTH } from '../../config';
 
 export default class TableView extends View {
     constructor() {
@@ -42,7 +42,7 @@ export default class TableView extends View {
                             cat.color
                         }"></span><span class="cat-content"><span class="cat-content__title">${truncate(
                             cat.name.trim(),
-                            CAT_TRUNCATE_LENGTH
+                            CAT_MAX_LENGTH
                         )}</span><span class="cat-content__subtitle">${formatAmount(
                             Object.values(this.data.entries)
                                 .flat()

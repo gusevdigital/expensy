@@ -46,6 +46,7 @@ class SideRegisterView extends SideView {
             label: 'Password',
             autocomplete: 'new-password',
             required: true,
+            note: 'Must be at least 12 characters.',
         })}
         ${forms.field('password', {
             id: this.id,

@@ -12,6 +12,10 @@ require_once(get_theme_file_path('/inc/ajax/edit_entry.php'));
 require_once(get_theme_file_path('/inc/ajax/switch_month.php'));
 require_once(get_theme_file_path('/inc/ajax/add_cat.php'));
 require_once(get_theme_file_path('/inc/ajax/delete_cat.php'));
+require_once(get_theme_file_path('/inc/ajax/edit_cat.php'));
+require_once(get_theme_file_path('/inc/ajax/order_cats.php'));
+require_once(get_theme_file_path('/inc/ajax/update_settings.php'));
+require_once(get_theme_file_path('/inc/ajax/delete_account.php'));
 
 
 add_action('wp_ajax_nopriv_return_world', 'getCrud');

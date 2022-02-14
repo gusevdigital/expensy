@@ -60,7 +60,9 @@ class Model {
         try {
             const response = await AJAX('setup', data);
             if (response.status) {
-                this.state.starting_budget = data.starting_budget;
+                this.state.starting_budget = parseFloat(
+                    String(data.starting_budget).replaceAll(',', '')
+                );
                 this.state.account.currency = data.currency;
                 return response;
             } else {
@@ -205,6 +207,70 @@ class Model {
         }
     }
 
+    async editCat(data) {
+        try {
+            const response = await AJAX('edit_cat', data);
+            if (response.status) {
+                // Update cat
+                const catIndex = this.state.cats.findIndex(
+                    cat => cat.id === data.id
+                );
+                this.state.cats[catIndex] = {
+                    ...this.state.cats[catIndex],
+                    name: data.name,
+                };
+                return response;
+            } else {
+                throw response.message;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async orderCats(data) {
+        try {
+            const response = await AJAX('order_cats', data);
+            if (response.status) {
+                // Update cats
+                this.state.cats = response.cats;
+                return response;
+            } else {
+                throw response.message;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async updateSettings(data) {
+        try {
+            const response = await AJAX('update_settings', data);
+            if (response.status) {
+                this.state.account.currency = response.currency;
+                this.state.account.name = response.name;
+                return response;
+            } else {
+                throw response.message;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    async deleteAccount() {
+        try {
+            const response = await AJAX('delete_account', {});
+            if (response.status) {
+                return response;
+            } else {
+                throw response.message;
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+
     _stateAddEntry(response, data, type) {
         const entryDate = new Date(data.date);
         if (
@@ -308,15 +374,20 @@ class Model {
     }
 
     _addCat(id, data) {
-        this.state.cats = [
-            ...this.state.cats,
-            {
-                id: String(id),
-                name: data.name,
-                type: data.type,
-                color: data.color,
-            },
-        ];
+        const newCat = {
+            id: String(id),
+            name: data.name,
+            type: data.type,
+            color: data.color,
+        };
+        if (
+            this.state.cats === null ||
+            typeof this.state.cats[Symbol.iterator] !== 'function'
+        ) {
+            this.state.cats = [newCat];
+        } else {
+            this.state.cats = [...this.state.cats, newCat];
+        }
     }
 }
 

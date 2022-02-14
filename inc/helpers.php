@@ -17,9 +17,9 @@ function sql_process_cat_keys($data)
 {
     $f_data = [];
 
-    if (isset($data['type'])) $f_data['cat_type'] = $data['type'];
-    if (isset($data['name'])) $f_data['cat_name'] = $data['name'];
-    if (isset($data['color'])) $f_data['cat_color'] = $data['color'];
+    if (isset($data['type'])) $f_data['cat_type'] = substr(esc_html($data['type']), 0, 3);
+    if (isset($data['name'])) $f_data['cat_name'] = substr(esc_sql($data['name']), 0, 20);
+    if (isset($data['color'])) $f_data['cat_color'] = substr(esc_sql($data['color']), 0, 20);
 
     return $f_data;
 }
