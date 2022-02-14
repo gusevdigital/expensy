@@ -193,9 +193,7 @@ export default class SideCatsView extends SideView {
                 }
             });
             el.addEventListener('input', e => {
-                console.log(e.target.textContent, e.target.textContent.length);
                 if (e.target.textContent.length > CAT_MAX_LENGTH) {
-                    console.log(e);
                     e.target.textContent = e.target.textContent.slice(
                         0,
                         CAT_MAX_LENGTH

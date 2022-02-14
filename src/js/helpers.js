@@ -92,6 +92,7 @@ export const formatAmount = (amount, currency) => {
 
 export const formatDate = (str, type = 'full') => {
     const date = new Date(str);
+    console.log(str, date);
     let options = {
         month: 'long',
         day: 'numeric',
